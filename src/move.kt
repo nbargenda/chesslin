@@ -1,7 +1,7 @@
 
 class Moves(){
 
-    val pawnMove = listOf<Byte>(1,0)
+    val pawnMove = setOf<List<Byte>>(listOf<Byte>(1,0))
     val pawnStartMove = setOf<List<Byte>>(listOf<Byte>(1,0),  listOf(2,0))
     val pawnEnPassant = setOf<List<Byte>>(listOf<Byte>(1,1),  listOf(1,-1))
     val knightMove    = setOf<List<Byte>>(listOf<Byte>(1,2),  listOf(2,1),  listOf<Byte>(-1,2),  listOf(-2,1),
@@ -30,6 +30,18 @@ class Moves(){
 
     val castleShort = setOf<List<Byte>>(listOf(0,2), listOf(0,-2))
     val castleLong= setOf<List<Byte>>(listOf(0,-2), listOf(0,3))
+
+    fun getMove(type: Char?): Set<List<Byte>>{
+        when (type){
+            'K' -> return kingMove
+            'Q' -> return queenMove
+            'R' -> return rookMove
+            'B' -> return bishopMove
+            'N' -> return knightMove
+            'P' -> return pawnMove
+            else -> return kingMove
+        }
+    }
 
 
 }

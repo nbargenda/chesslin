@@ -1,5 +1,6 @@
+import kotlin.math.ln
 
-class Square(var piece: Piece? = null){
+class Square(var piece: Piece? = null, val positionX: Int, val positionY: Int){
 
     fun hasPiece(): Boolean {
         return this.piece != null
@@ -23,41 +24,79 @@ class Square(var piece: Piece? = null){
     fun emptySquare(){
         this.piece = null
     }
+
+    fun getX(): Int{
+        return this.positionX
+    }
+
+    fun getY(): Int{
+        return this.positionY
+    }
+
+
 }
 
-open class Piece(private val color: Boolean, private val type: Char, private var hasMoved: Boolean = false){
-
-
-    fun getColor(): String{
-        return if (this.color) "w" else "b"
-    }
-
-    fun getType(): Char{
-        return this.type
-    }
-
-    fun getHasMoved(): Boolean{
-        return this.hasMoved
-    }
-
-    fun setHasMoved(){
-        this.hasMoved = true
+fun bound(int: Int): Int{
+    return when (int){
+        in 8..16 -> 7
+        in -1 downTo -9 -> 0
+        else -> int
     }
 }
-
 
 class Board(){
-    val squares = arrayOf(
-        arrayOf(Square(),Square(),Square(),Square(),Square(),Square(),Square(),Square()),
-        arrayOf(Square(),Square(),Square(),Square(),Square(),Square(),Square(),Square()),
-        arrayOf(Square(),Square(),Square(),Square(),Square(),Square(),Square(),Square()),
-        arrayOf(Square(),Square(),Square(),Square(),Square(),Square(),Square(),Square()),
-        arrayOf(Square(),Square(),Square(),Square(),Square(),Square(),Square(),Square()),
-        arrayOf(Square(),Square(),Square(),Square(),Square(),Square(),Square(),Square()),
-        arrayOf(Square(),Square(),Square(),Square(),Square(),Square(),Square(),Square()),
-        arrayOf(Square(),Square(),Square(),Square(),Square(),Square(),Square(),Square())
-    )
+
+
+    var squares = arrayListOf<ArrayList<Square>>()
+
+    init{
+        for(i in 0..7){
+            squares.add(arrayListOf<Square>())
+            for (j in 0..7){
+                squares[i].add(Square(null,i,j))
+            }
+        }
+    }
     val moves = Moves()
+
+    fun threatenedSquares(square: List<Int>): MutableSet<Square>{
+        val result = mutableSetOf<Square>()
+        val type = this.squares[square[0]][square[1]].getType()
+        val possibleMoves = moves.getMove(type)
+        possibleMoves.forEach {
+            result.add(this.squares[bound(square[0]+it[0])][(bound(square[1]+it[1]))])
+        }
+        return result
+    }
+
+    fun getPieces(): MutableSet<Square>{
+        val result = mutableSetOf<Square>()
+        this.squares.forEach {
+            it.forEach { it2 ->
+                if (it2.hasPiece())
+                    result.add(it2)
+            }
+        }
+        return result
+    }
+
+    fun getWhitePieces(pieces: Set<Square>): MutableSet<Square>{
+        val result = mutableSetOf<Square>()
+        pieces.forEach {
+            if (it.getColor()=="w")
+                result.add(it)
+        }
+        return result
+    }
+
+    fun getBlackPieces(pieces: Set<Square>): MutableSet<Square>{
+        val result = mutableSetOf<Square>()
+        pieces.forEach {
+            if (it.getColor()=="b")
+                result.add(it)
+        }
+        return result
+    }
 
     fun toASCII(): String{
         var string = String()
@@ -71,8 +110,10 @@ class Board(){
                     string += "_ "
                 }
             }
-            string += "\n"
+            if (i > 0) string += "\n"
+
         }
+        string = mapToASCII(string)
         return string
     }
 
@@ -83,62 +124,38 @@ class Board(){
     }
 }
 
-
-class Game(){
-    val board = Board()
-
-    fun startingPosition(){
-        for (i in 0..7){
-            val pawnW: Piece = Piece(true,'P')
-            val pawnB: Piece = Piece(false, 'P')
-            this.board.squares[1][i].putPiece(pawnW)
-            this.board.squares[6][i].putPiece(pawnB)
-
+fun mapToASCII(string: String): String{
+    var result = String()
+    val pieceMap = mapOf<String, Char>("bP" to '♟', "wP" to '♙', "bR" to '♜', "wR" to '♖', "bB" to '♝', "wB" to '♗',
+                                       "bN" to '♞', "wN" to '♘', "bQ" to '♛', "wQ" to '♕', "bK" to '♚', "wK" to '♔')
+    val lines = string.lines()
+    lines.forEach{
+        for (i in 0..14 step 2){
+            if (pieceMap.contains(it.substring(i,i+2))){
+                result += pieceMap[it.substring(i,i+2)] ?:""
+                result += " "
+            }
+            else {
+                result += it.substring(i,i+2)+" "
+            }
         }
+            result += "\n"
 
-        for (i in 0..1){
-            val rookW: Piece = Piece(true, 'R')
-            val rookB: Piece = Piece(false,'R')
-            this.board.squares[0][i*7].putPiece(rookW)
-            this.board.squares[7][i*7].putPiece(rookB)
-        }
-
-        val knightPos = listOf(1,6)
-        for (i in knightPos){
-            val knightW: Piece = Piece(true, 'N')
-            val knightB: Piece = Piece(false,'N')
-            this.board.squares[0][i].putPiece(knightW)
-            this.board.squares[7][i].putPiece(knightB)
-        }
-
-        val bishopPos = listOf(2,5)
-        for (i in bishopPos){
-            val bishopW: Piece = Piece(true,  'B')
-            val bishopB: Piece = Piece(false, 'B')
-            this.board.squares[0][i].putPiece(bishopW)
-            this.board.squares[7][i].putPiece(bishopB)
-        }
-
-        val queenW: Piece = Piece(true, 'Q')
-        val queenB: Piece = Piece(false,'Q')
-        val kingW:  Piece = Piece(true, 'K')
-        val kingB:  Piece = Piece(false,'K')
-
-        this.board.squares[0][3].putPiece(queenW)
-        this.board.squares[7][3].putPiece(queenB)
-        this.board.squares[0][4].putPiece(kingW)
-        this.board.squares[7][4].putPiece(kingB)
     }
 
-
+    return result
 }
+
+
 
 fun main(){
     println("Chess Hype")
-    val testGame: Game = Game()
+    val testGame = Game()
     testGame.startingPosition()
-    println(testGame.board.toASCII())
     testGame.board.basicMove(testGame.board.squares[0][6],testGame.board.squares[2][5])
     println(testGame.board.toASCII())
+
+
+
 
 }
