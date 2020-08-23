@@ -1,5 +1,3 @@
-import kotlin.math.ln
-
 class Square(var piece: Piece? = null, val positionX: Int, val positionY: Int){
 
     fun hasPiece(): Boolean {
@@ -11,7 +9,7 @@ class Square(var piece: Piece? = null, val positionX: Int, val positionY: Int){
     }
 
     fun getColor(): String?{
-        return  this.piece?.getColor()
+        return this.piece?.getColor()
     }
     fun getType(): Char?{
         return this.piece?.getType()
@@ -57,17 +55,40 @@ class Board(){
             }
         }
     }
+
     val moves = Moves()
 
-    fun threatenedSquares(square: List<Int>): MutableSet<Square>{
+    fun threatenedSquaresPawn(square: Square): MutableSet<Square>{
         val result = mutableSetOf<Square>()
-        val type = this.squares[square[0]][square[1]].getType()
-        val possibleMoves = moves.getMove(type)
-        possibleMoves.forEach {
-            result.add(this.squares[bound(square[0]+it[0])][(bound(square[1]+it[1]))])
-        }
+        result.add(this.squares[square.getX()+1][square.getY()-1])
+        result.add(this.squares[square.getX()+1][square.getY()+1])
         return result
     }
+
+    fun threatenedSquaresRook(square: Square): MutableSet<Square>{
+        val result = mutableSetOf<Square>()
+        val possibleMoves = moves.getMove('R')
+        return result
+    }
+
+    fun threatenedSquaresBishop(square: Square): MutableSet<Square>{
+        val result = mutableSetOf<Square>()
+        val possibleMoves = moves.getMove('B')
+        return result
+    }
+
+    fun threatenedSquaresKnight(square: Square): MutableSet<Square>{
+        val result = mutableSetOf<Square>()
+        val possibleMoves = moves.getMove('N')
+        return result
+    }
+
+    fun threatenedSquaresKing(square: Square): MutableSet<Square>{
+        val result = mutableSetOf<Square>()
+        val possibleMoves = moves.getMove('K')
+        return result
+    }
+
 
     fun getPieces(): MutableSet<Square>{
         val result = mutableSetOf<Square>()
@@ -154,6 +175,13 @@ fun main(){
     testGame.startingPosition()
     testGame.board.basicMove(testGame.board.squares[0][6],testGame.board.squares[2][5])
     println(testGame.board.toASCII())
+
+    val squares = testGame.board.threatenedSquaresPawn(testGame.board.squares[1][1])
+    squares.forEach {
+        print(it.getX())
+        print("")
+        println(it.getY())
+    }
 
 
 
