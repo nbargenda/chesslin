@@ -58,35 +58,90 @@ class Board(){
 
     val moves = Moves()
 
-    fun threatenedSquaresPawn(square: Square): MutableSet<Square>{
+    private fun removeInvalidMoves(squares: MutableSet<List<Int>>): MutableSet<Square>{
+        val result = mutableSetOf<Square>()
+        squares.forEach {
+            if (it[0] in 0..7 && it[1] in 0..7) {
+                result.add(this.squares[it[0]][it[1]])
+            }
+        }
+        return result
+    }
+
+    fun threatenedSquares(square: Square): Set<Square> {
+        return when (square.getType()){
+            'P' -> threatenedSquaresPawn(square)
+            'K','N' -> threatenedSquaresKnightKing(square)
+            'B','R','Q' -> threatenedSquaresRBQ(square)
+            else -> setOf()
+        }
+    }
+    private fun threatenedSquaresPawn(square: Square): MutableSet<Square>{
         val result = mutableSetOf<Square>()
         result.add(this.squares[square.getX()+1][square.getY()-1])
         result.add(this.squares[square.getX()+1][square.getY()+1])
         return result
     }
 
-    fun threatenedSquaresRook(square: Square): MutableSet<Square>{
-        val result = mutableSetOf<Square>()
-        val possibleMoves = moves.getMove('R')
+    private fun checkBlock(squares: MutableSet<Square>): MutableSet<List<Int>> {
+        val result = mutableSetOf<List<Int>>()
+        squares.forEach {
+            result.add(listOf(it.getX(),it.getY()))
+            if (this.squares[it.getX()][it.getY()].hasPiece()) return result
+        }
         return result
+
     }
 
-    fun threatenedSquaresBishop(square: Square): MutableSet<Square>{
-        val result = mutableSetOf<Square>()
-        val possibleMoves = moves.getMove('B')
-        return result
+    private fun threatenedSquaresRBQ(square: Square): MutableSet<Square>{
+        val possibleMoves = moves.getMove(square.getType())
+        val possibleSquaresUp: MutableSet<List<Int>> = mutableSetOf()
+        val possibleSquaresDown: MutableSet<List<Int>> = mutableSetOf()
+        val possibleSquaresLeft: MutableSet<List<Int>> = mutableSetOf()
+        val possibleSquaresRight: MutableSet<List<Int>> = mutableSetOf()
+        val possibleSquaresXX: MutableSet<List<Int>> = mutableSetOf()
+        val possibleSquaresXY: MutableSet<List<Int>> = mutableSetOf()
+        val possibleSquaresYX: MutableSet<List<Int>> = mutableSetOf()
+        val possibleSquaresYY: MutableSet<List<Int>> = mutableSetOf()
+        val x = square.getX()
+        val y = square.getY()
+        val possibleSquares = mutableSetOf<List<Int>>()
+        possibleMoves.forEach {
+            if (square.getType()=='R' || square.getType()=='Q') {
+                if (it[0] > 0 && (it[1].toInt()) == 0)      possibleSquaresUp.add(listOf(x + it[0], y))
+                else if (it[0] < 0 && (it[1].toInt()) == 0) possibleSquaresDown.add(listOf(x + it[0], y))
+                else if ((it[0].toInt()) == 0 && it[1] < 0) possibleSquaresLeft.add(listOf(x, y + it[1]))
+                else if ((it[0].toInt()) == 0 && it[1] > 0) possibleSquaresRight.add(listOf(x, y + it[1]))
+            }
+            if (square.getType()=='B' || square.getType()=='Q'){
+                if      (it[0]>0 && it[1]>0) possibleSquaresXX.add(listOf(x+it[0],y+it[1]))
+                else if (it[0]<0 && it[1]<0) possibleSquaresYY.add(listOf(x+it[0],y+it[1]))
+                else if (it[0]>0 && it[1]<0) possibleSquaresXY.add(listOf(x+it[0],y+it[1]))
+                else if (it[0]<0 && it[1]>0) possibleSquaresYX.add(listOf(x+it[0],y+it[1]))
+            }
+        }
+
+        possibleSquares.addAll(checkBlock(removeInvalidMoves(possibleSquaresUp)))
+        possibleSquares.addAll(checkBlock(removeInvalidMoves(possibleSquaresDown)))
+        possibleSquares.addAll(checkBlock(removeInvalidMoves(possibleSquaresLeft)))
+        possibleSquares.addAll(checkBlock(removeInvalidMoves(possibleSquaresRight)))
+        possibleSquares.addAll(checkBlock(removeInvalidMoves(possibleSquaresXX)))
+        possibleSquares.addAll(checkBlock(removeInvalidMoves(possibleSquaresXY)))
+        possibleSquares.addAll(checkBlock(removeInvalidMoves(possibleSquaresYX)))
+        possibleSquares.addAll(checkBlock(removeInvalidMoves(possibleSquaresYY)))
+
+
+        return removeInvalidMoves(possibleSquares)
+
     }
 
-    fun threatenedSquaresKnight(square: Square): MutableSet<Square>{
-        val result = mutableSetOf<Square>()
-        val possibleMoves = moves.getMove('N')
-        return result
-    }
-
-    fun threatenedSquaresKing(square: Square): MutableSet<Square>{
-        val result = mutableSetOf<Square>()
-        val possibleMoves = moves.getMove('K')
-        return result
+    private fun threatenedSquaresKnightKing(square: Square): MutableSet<Square>{
+        val possibleMoves = moves.getMove(square.getType())
+        val possibleSquares: MutableSet<List<Int>> = mutableSetOf()
+        possibleMoves.forEach {
+            possibleSquares.add(listOf(square.getX()+it[0],square.getY()+it[1]))
+        }
+        return removeInvalidMoves(possibleSquares)
     }
 
 
@@ -174,16 +229,15 @@ fun main(){
     val testGame = Game()
     testGame.startingPosition()
     testGame.board.basicMove(testGame.board.squares[0][6],testGame.board.squares[2][5])
-    println(testGame.board.toASCII())
+   // println(testGame.board.toASCII())
 
-    val squares = testGame.board.threatenedSquaresPawn(testGame.board.squares[1][1])
+    val squares = testGame.board.threatenedSquares(testGame.board.squares[0][3])
     squares.forEach {
         print(it.getX())
         print("")
         println(it.getY())
     }
 
-
-
+    
 
 }
