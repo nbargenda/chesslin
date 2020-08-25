@@ -68,6 +68,19 @@ class Board(){
         return result
     }
 
+
+    fun defendedThreatenedSquares(square: Square): ArrayList<Set<Square>>{
+        val color = square.getColor()
+        val defSquares = mutableSetOf<Square>()
+        val threatSquares = mutableSetOf<Square>()
+        val threatenedSquares = threatenedSquares(square)
+        threatenedSquares.forEach {
+            if (it.getColor().equals(color)) defSquares.add(it)
+            else threatSquares.add(it)
+        }
+        return arrayListOf(defSquares,threatSquares)
+    }
+
     fun threatenedSquares(square: Square): Set<Square> {
         return when (square.getType()){
             'P' -> threatenedSquaresPawn(square)
@@ -203,7 +216,7 @@ class Board(){
 fun mapToASCII(string: String): String{
     var result = String()
     val pieceMap = mapOf<String, Char>("bP" to '♟', "wP" to '♙', "bR" to '♜', "wR" to '♖', "bB" to '♝', "wB" to '♗',
-                                       "bN" to '♞', "wN" to '♘', "bQ" to '♛', "wQ" to '♕', "bK" to '♚', "wK" to '♔')
+                                                        "bN" to '♞', "wN" to '♘', "bQ" to '♛', "wQ" to '♕', "bK" to '♚', "wK" to '♔')
     val lines = string.lines()
     lines.forEach{
         for (i in 0..14 step 2){
@@ -223,21 +236,15 @@ fun mapToASCII(string: String): String{
 }
 
 
-
 fun main(){
     println("Chess Hype")
     val testGame = Game()
     testGame.startingPosition()
     testGame.board.basicMove(testGame.board.squares[0][6],testGame.board.squares[2][5])
-   // println(testGame.board.toASCII())
+    //println(testGame.board.toASCII())
 
-    val squares = testGame.board.threatenedSquares(testGame.board.squares[0][3])
-    squares.forEach {
-        print(it.getX())
-        print("")
-        println(it.getY())
-    }
-
-    
+    val squares = testGame.board.defendedThreatenedSquares(testGame.board.squares[0][3])
+    val move = Move(testGame.board.squares[0][6],testGame.board.squares[2][5])
 
 }
+

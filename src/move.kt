@@ -77,3 +77,15 @@ fun bishopMove(): MutableSet<List<Byte>>{
     }
     return moves
 }
+
+class Move(private val squareFrom: Square, private val squareTo: Square){
+
+    fun getSquareFrom(): Square{
+        return this.squareFrom
+    }
+
+    fun getSquareTo(): Square{
+        return this.squareTo
+    }
+
+}
