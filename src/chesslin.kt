@@ -211,6 +211,25 @@ class Board(){
         squareB.piece!!.setHasMoved()
         squareA.emptySquare()
     }
+
+    fun castleShort(color: Boolean){
+        var rank = 0
+        if (!color) rank = 7
+        this.squares[rank][6].putPiece(this.squares[rank][4].piece!!)
+        this.squares[rank][5].putPiece(this.squares[rank][7].piece!!)
+        this.squares[rank][4].emptySquare()
+        this.squares[rank][7].emptySquare()
+    }
+
+    fun castleLong(color: Boolean){
+        var rank = 0
+        if (!color) rank = 7
+        this.squares[rank][2].putPiece(this.squares[rank][4].piece!!)
+        this.squares[rank][3].putPiece(this.squares[rank][0].piece!!)
+        this.squares[rank][4].emptySquare()
+        this.squares[rank][0].emptySquare()
+    }
+    
 }
 
 fun mapToASCII(string: String): String{
