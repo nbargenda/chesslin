@@ -1,37 +1,33 @@
 
 class Moves(){
 
-    val pawnMove = setOf<List<Byte>>(listOf<Byte>(1,0))
-    val pawnStartMove = setOf<List<Byte>>(listOf<Byte>(1,0),  listOf(2,0))
-    val pawnEnPassant = setOf<List<Byte>>(listOf<Byte>(1,1),  listOf(1,-1))
-    val knightMove    = setOf<List<Byte>>(listOf<Byte>(1,2),  listOf(2,1),  listOf<Byte>(-1,2),  listOf(-2,1),
-        listOf<Byte>(1,-2), listOf(2,-1), listOf<Byte>(-1,-2), listOf(-2,-1))
-    var rookMove      = mutableSetOf<List<Byte>>()
+    val pawnMove = setOf<List<Int>>(listOf<Int>(1,0))
+    val pawnStartMove = setOf<List<Int>>(listOf<Int>(1,0),  listOf(2,0))
+    val knightMove    = setOf<List<Int>>(listOf<Int>(1,2),  listOf(2,1),  listOf<Int>(-1,2),  listOf(-2,1),
+        listOf<Int>(1,-2), listOf(2,-1), listOf<Int>(-1,-2), listOf(-2,-1))
+    var rookMove      = mutableSetOf<List<Int>>()
 
     init{
         rookMove.addAll(rookMove())
     }
 
-    var bishopMove  = mutableSetOf<List<Byte>>()
+    var bishopMove  = mutableSetOf<List<Int>>()
 
     init {
         bishopMove.addAll(bishopMove())
     }
 
-    var queenMove = mutableSetOf<List<Byte>>()
+    var queenMove = mutableSetOf<List<Int>>()
 
     init {
         queenMove.addAll(bishopMove())
         queenMove.addAll(rookMove())
     }
 
-    val kingMove = setOf<List<Byte>>(listOf(1,0), listOf(0,1),   listOf(-1,0), listOf(0,-1),
+    val kingMove = setOf<List<Int>>(listOf(1,0), listOf(0,1),   listOf(-1,0), listOf(0,-1),
         listOf(1,1), listOf(-1,-1), listOf(-1,1), listOf(1,-1))
 
-    val castleShort = setOf<List<Byte>>(listOf(0,2), listOf(0,-2))
-    val castleLong= setOf<List<Byte>>(listOf(0,-2), listOf(0,3))
-
-    fun getMove(type: Char?): Set<List<Byte>>{
+    fun getMove(type: Char?): Set<List<Int>>{
         when (type){
             'K' -> return kingMove
             'Q' -> return queenMove
@@ -46,14 +42,13 @@ class Moves(){
 
 }
 
-fun rookMove(): MutableSet<List<Byte>>{
-    val moves = mutableSetOf<List<Byte>>()
+fun rookMove(): MutableSet<List<Int>>{
+    val moves = mutableSetOf<List<Int>>()
     for (i in 1..7){
-        val j = i.toByte()
-        val x1 = listOf<Byte>(j,0)
-        val x2 = listOf<Byte>((-j).toByte(),0)
-        val y1 = listOf<Byte>(0,j)
-        val y2 = listOf<Byte>(0, (-j).toByte())
+        val x1 = listOf<Int>(i,0)
+        val x2 = listOf<Int>(-i,0)
+        val y1 = listOf<Int>(0,i)
+        val y2 = listOf<Int>(0,-i)
         moves.add(x1)
         moves.add(x2)
         moves.add(y1)
@@ -62,14 +57,13 @@ fun rookMove(): MutableSet<List<Byte>>{
     return moves
 }
 
-fun bishopMove(): MutableSet<List<Byte>>{
-    val moves = mutableSetOf<List<Byte>>()
+fun bishopMove(): MutableSet<List<Int>>{
+    val moves = mutableSetOf<List<Int>>()
     for (i in 1..7){
-        val j = i.toByte()
-        val xx = listOf<Byte>(j,j)
-        val xy = listOf<Byte>(j,(-j).toByte())
-        val yx = listOf<Byte>((-j).toByte(),j)
-        val yy = listOf<Byte>((-j).toByte(),(-j).toByte())
+        val xx = listOf<Int>(i,i)
+        val xy = listOf<Int>(i,-i)
+        val yx = listOf<Int>(-i,i)
+        val yy = listOf<Int>(-i,-i)
         moves.add(xx)
         moves.add(xy)
         moves.add(yx)

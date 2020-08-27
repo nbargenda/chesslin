@@ -58,6 +58,24 @@ class Board(){
 
     val moves = Moves()
 
+
+    fun possibleMoves(square: Square): MutableSet<Square>{
+        val result = mutableSetOf<Square>()
+        if (square.getType()=='P' && !this.squares[square.getX()+1][square.getY()].hasPiece()){
+            if (!square.getHasMoved()!! && !this.squares[square.getX()+2][square.getY()].hasPiece() )
+                result.add(this.squares[square.getX()+2][square.getY()])
+            result.add(this.squares[square.getX()+1][square.getY()])
+        }
+        else {
+            val threatenedSquares = threatenedSquares(square)
+            threatenedSquares.forEach {
+                if (it.getColor()!=square.getColor()) result.add(it)
+            }
+        }
+
+        return result
+    }
+
     private fun removeInvalidMoves(squares: MutableSet<List<Int>>): MutableSet<Square>{
         val result = mutableSetOf<Square>()
         squares.forEach {
@@ -91,8 +109,8 @@ class Board(){
     }
     private fun threatenedSquaresPawn(square: Square): MutableSet<Square>{
         val result = mutableSetOf<Square>()
-        result.add(this.squares[square.getX()+1][square.getY()-1])
-        result.add(this.squares[square.getX()+1][square.getY()+1])
+        if (square.getY()>0) result.add(this.squares[square.getX()+1][square.getY()-1])
+        if (square.getY()<7) result.add(this.squares[square.getX()+1][square.getY()+1])
         return result
     }
 
@@ -121,10 +139,10 @@ class Board(){
         val possibleSquares = mutableSetOf<List<Int>>()
         possibleMoves.forEach {
             if (square.getType()=='R' || square.getType()=='Q') {
-                if (it[0] > 0 && (it[1].toInt()) == 0)      possibleSquaresUp.add(listOf(x + it[0], y))
-                else if (it[0] < 0 && (it[1].toInt()) == 0) possibleSquaresDown.add(listOf(x + it[0], y))
-                else if ((it[0].toInt()) == 0 && it[1] < 0) possibleSquaresLeft.add(listOf(x, y + it[1]))
-                else if ((it[0].toInt()) == 0 && it[1] > 0) possibleSquaresRight.add(listOf(x, y + it[1]))
+                if (it[0] > 0 && (it[1]) == 0)      possibleSquaresUp.add(listOf(x + it[0], y))
+                else if (it[0] < 0 && (it[1]) == 0) possibleSquaresDown.add(listOf(x + it[0], y))
+                else if ((it[0]) == 0 && it[1] < 0) possibleSquaresLeft.add(listOf(x, y + it[1]))
+                else if ((it[0]) == 0 && it[1] > 0) possibleSquaresRight.add(listOf(x, y + it[1]))
             }
             if (square.getType()=='B' || square.getType()=='Q'){
                 if      (it[0]>0 && it[1]>0) possibleSquaresXX.add(listOf(x+it[0],y+it[1]))
@@ -169,7 +187,7 @@ class Board(){
         return result
     }
 
-    fun getWhitePieces(pieces: Set<Square>): MutableSet<Square>{
+    fun getWhitePieces(pieces: MutableSet<Square>): MutableSet<Square>{
         val result = mutableSetOf<Square>()
         pieces.forEach {
             if (it.getColor()=="w")
@@ -178,7 +196,7 @@ class Board(){
         return result
     }
 
-    fun getBlackPieces(pieces: Set<Square>): MutableSet<Square>{
+    fun getBlackPieces(pieces: MutableSet<Square>): MutableSet<Square>{
         val result = mutableSetOf<Square>()
         pieces.forEach {
             if (it.getColor()=="b")
@@ -229,7 +247,7 @@ class Board(){
         this.squares[rank][4].emptySquare()
         this.squares[rank][0].emptySquare()
     }
-    
+
 }
 
 fun mapToASCII(string: String): String{
@@ -264,6 +282,10 @@ fun main(){
 
     val squares = testGame.board.defendedThreatenedSquares(testGame.board.squares[0][3])
     val move = Move(testGame.board.squares[0][6],testGame.board.squares[2][5])
+    println(testGame.board.possibleMoves(testGame.board.squares[1][2]))
+    println(testGame.board.possibleMoves(testGame.board.squares[0][7]))
+    println(testGame.board.possibleMoves(testGame.board.squares[0][3]))
+    println(testGame.board.possibleMoves(testGame.board.squares[2][5]))
 
 }
 
