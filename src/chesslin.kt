@@ -31,7 +31,6 @@ class Square(var piece: Piece? = null, val positionX: Int, val positionY: Int){
         return this.positionY
     }
 
-
 }
 
 fun bound(int: Int): Int{
@@ -56,7 +55,7 @@ class Board(){
         }
     }
 
-    val moves = Moves()
+    private val moves = Moves()
 
 
     fun possibleMoves(square: Square): MutableSet<Square>{
@@ -99,7 +98,7 @@ class Board(){
         return arrayListOf(defSquares,threatSquares)
     }
 
-    fun threatenedSquares(square: Square): Set<Square> {
+    private fun threatenedSquares(square: Square): Set<Square> {
         return when (square.getType()){
             'P' -> threatenedSquaresPawn(square)
             'K','N' -> threatenedSquaresKnightKing(square)
