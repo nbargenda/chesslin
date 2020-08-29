@@ -2,7 +2,6 @@
 class Moves(){
 
     val pawnMove = setOf<List<Int>>(listOf<Int>(1,0))
-    val pawnStartMove = setOf<List<Int>>(listOf<Int>(1,0),  listOf(2,0))
     val knightMove    = setOf<List<Int>>(listOf<Int>(1,2),  listOf(2,1),  listOf<Int>(-1,2),  listOf(-2,1),
         listOf<Int>(1,-2), listOf(2,-1), listOf<Int>(-1,-2), listOf(-2,-1))
     var rookMove      = mutableSetOf<List<Int>>()
