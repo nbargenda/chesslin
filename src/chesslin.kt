@@ -273,18 +273,7 @@ fun mapToASCII(string: String): String{
 
 
 fun main(){
-    println("Chess Hype")
-    val testGame = Game()
-    testGame.startingPosition()
-    testGame.board.basicMove(testGame.board.squares[0][6],testGame.board.squares[2][5])
-    //println(testGame.board.toASCII())
 
-    val squares = testGame.board.defendedThreatenedSquares(testGame.board.squares[0][3])
-    val move = Move(testGame.board.squares[0][6],testGame.board.squares[2][5])
-    println(testGame.board.possibleMoves(testGame.board.squares[1][2]))
-    println(testGame.board.possibleMoves(testGame.board.squares[0][7]))
-    println(testGame.board.possibleMoves(testGame.board.squares[0][3]))
-    println(testGame.board.possibleMoves(testGame.board.squares[2][5]))
 
 }
 
