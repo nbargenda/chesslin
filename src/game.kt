@@ -44,18 +44,20 @@ class Game(){
         this.board.squares[7][4].putPiece(kingB)
     }
 
-    private val a = Input("Move")
+    private val a0 = Input("Move")
+    private val a1 = Input("Check")
+    private val a2 = Input("Checkmate")
     private val s0 = State ("Whites Turn")
     private val s1 = State ("Blacks Turn")
     private val s2 = State ("White Check")
     private val s3 = State ("Black Check")
     private val s4 = State ( "Checkmate")
     val stateMachine = StateMachine(
-        states = setOf(s0, s1),
-        inputs = setOf(a),
+        states = setOf(s0, s1, s2, s3, s4),
+        inputs = setOf(a0, a1, a2),
         delta = { state: State, input: Input ->
             when(input) {
-                a -> when (state) {
+                a0 -> when (state) {
                     s0 -> s1
                     s1 -> s0
                     else -> state
