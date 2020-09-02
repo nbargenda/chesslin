@@ -274,6 +274,7 @@ fun mapToASCII(string: String): String{
 
 fun main(){
 
+    val testgame = Game()
 
 }
 
