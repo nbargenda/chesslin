@@ -26,6 +26,14 @@ class Moves(){
     val kingMove = setOf<List<Int>>(listOf(1,0), listOf(0,1),   listOf(-1,0), listOf(0,-1),
         listOf(1,1), listOf(-1,-1), listOf(-1,1), listOf(1,-1))
 
+    /**
+     * Returns a Set of the possible moves of a piece.
+     *
+     * @param type Character which signifies which piece it is.
+     *
+     * @return Set of Moves
+     */
+
     fun getMove(type: Char?): Set<List<Int>>{
         when (type){
             'K' -> return kingMove
