@@ -71,7 +71,6 @@ class Board(){
                 if (it.getColor()!=square.getColor()) result.add(it)
             }
         }
-
         return result
     }
 
@@ -120,7 +119,6 @@ class Board(){
             if (this.squares[it.getX()][it.getY()].hasPiece()) return result
         }
         return result
-
     }
 
     private fun threatenedSquaresRBQ(square: Square): MutableSet<Square>{
@@ -160,9 +158,7 @@ class Board(){
         possibleSquares.addAll(checkBlock(removeInvalidMoves(possibleSquaresYX)))
         possibleSquares.addAll(checkBlock(removeInvalidMoves(possibleSquaresYY)))
 
-
         return removeInvalidMoves(possibleSquares)
-
     }
 
     private fun threatenedSquaresKnightKing(square: Square): MutableSet<Square>{
