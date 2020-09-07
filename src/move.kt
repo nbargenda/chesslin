@@ -45,8 +45,6 @@ class Moves(){
             else -> return kingMove
         }
     }
-
-
 }
 
 fun rookMove(): MutableSet<List<Int>>{
@@ -79,7 +77,9 @@ fun bishopMove(): MutableSet<List<Int>>{
     return moves
 }
 
-class Move(val squareFrom: Square, val squareTo: Square){
+class Move(val squareFrom: Square, val squareTo: Square, val special: String? = null){
 
 
 }
+
+

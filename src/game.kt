@@ -44,14 +44,14 @@ class Game(){
         this.board.squares[7][4].putPiece(kingB)
     }
 
-    private val a0 = Input("Move")
-    private val a1 = Input("Check")
-    private val a2 = Input("Checkmate")
-    private val s0 = State ("Whites Turn")
-    private val s1 = State ("Blacks Turn")
-    private val s2 = State ("White Check")
-    private val s3 = State ("Black Check")
-    private val s4 = State ( "Checkmate")
+    private val a0 = Input("move")
+    private val a1 = Input("check")
+    private val a2 = Input("checkmate")
+    private val s0 = State ("white Turn")
+    private val s1 = State ("black Turn")
+    private val s2 = State ("white Check")
+    private val s3 = State ("black Check")
+    private val s4 = State ( "checkmate")
 
     val stateMachine = StateMachine(
         states = setOf(s0, s1, s2, s3, s4),
@@ -68,8 +68,8 @@ class Game(){
                 a1 -> when (state) {
                     s0 -> s3
                     s1 -> s2
-                    s2 -> s2
-                    s3 -> s3
+                    s2 -> s3
+                    s3 -> s2
                     else -> state
                 }
                 a2 -> when (state) {
@@ -86,4 +86,28 @@ class Game(){
         isFinalState = { state: State -> state == s4 }
     )
 
+    fun transition(dfa: StateMachine, input: MutableList<Input>): State {
+        var state = dfa.initialState
+        for (character in input) {
+            state = dfa.delta(state, character)
+        }
+        return state
+    }
+
+    fun parseMove(input: String, moves: MutableSet<MutableSet<Square>>): Move{
+        var move:String
+        when {
+            input[0] in 'a'..'h' -> {
+                // single or double pawn move
+            }
+            input.contains('x') -> {
+                // capture
+            }
+            else -> {
+                // move by a piece which is not a pawn
+            }
+        }
+
+        return Move(Square(positionX = 1,positionY = 1),Square(positionX = 1,positionY = 1))
+    }
 }
