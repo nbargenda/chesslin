@@ -1,4 +1,3 @@
-
 class Game(){
     val board = Board()
 
@@ -94,20 +93,33 @@ class Game(){
         return state
     }
 
-    fun parseMove(input: String, moves: MutableSet<MutableSet<Square>>): Move{
-        var move:String
-        when {
-            input[0] in 'a'..'h' -> {
-                // single or double pawn move
-            }
-            input.contains('x') -> {
-                // capture
-            }
-            else -> {
-                // move by a piece which is not a pawn
-            }
-        }
 
-        return Move(Square(positionX = 1,positionY = 1),Square(positionX = 1,positionY = 1))
+
+    fun parseMove(input: String, moves: MutableSet<ArrayList<Square>>): Move{
+        var moveFrom = Square(positionX = 10,positionY = 10)
+        var y = 0
+        var x = 0
+        if (input.isNotEmpty())
+            when {
+                input[0] in 'a'..'h' -> {
+                    y = input[0].toInt()-97
+                    x = input[1].toInt()-49
+                    moves.forEach {
+                        if (it.contains(this.board.squares[x][y]) && it[0].getType()=='P') moveFrom = it[0]
+                    }
+                }
+                input.contains('x') -> {
+                    // capture
+                }
+                else -> {
+                    // move by a piece which is not a pawn
+                }
+            }
+
+        return Move(moveFrom,this.board.squares[x][y])
+    }
+
+    fun executeMove(move: Move){
+        this.board.basicMove(move.squareFrom, move.squareTo)
     }
 }

@@ -15,6 +15,15 @@ class Board(){
 
     private val moves = Moves()
 
+    fun hasMoves(square: Square): Boolean{
+         return possibleMoves(square).isNotEmpty()
+    }
+
+    fun possibleMovesSquare(square: Square): ArrayList<Square>{
+        val result = arrayListOf<Square>(square)
+        result.addAll(possibleMoves(square))
+        return result
+    }
 
     fun possibleMoves(square: Square): MutableSet<Square>{
         val result = mutableSetOf<Square>()

@@ -38,11 +38,15 @@ fun charToColor(char: Char): Boolean{
     }
 }
 
+fun isValidMove(move: Move): Boolean{
+    return move.squareFrom.getX() in 0..7 && move.squareFrom.getY() in 0..7 && move.squareTo.getX() in 0..7 && move.squareTo.getY() in 0..7
+}
+
 fun main(){
+
 
     val testgame = Game()
     testgame.startingPosition()
-    println(testgame.board.possibleMoves(testgame.board.squares[0][6]))
     val inputs = mutableListOf<Input>()
     var input: String?
     val pieces = testgame.board.getPieces()
@@ -50,22 +54,26 @@ fun main(){
     while(true) {
 
         val currentState = testgame.transition(testgame.stateMachine, inputs)
-        val possibleMoves:MutableSet<MutableSet<Square>> = mutableSetOf()
+        val possibleMoves:MutableSet<ArrayList<Square>> = mutableSetOf()
         val currentPieces:MutableSet<Square>
         currentPieces = if (currentState.value[0] == 'w') testgame.board.getWhitePieces(pieces)
             else testgame.board.getBlackPieces(pieces)
         currentPieces.forEach {
+            if (testgame.board.hasMoves(it))  possibleMoves.add(testgame.board.possibleMovesSquare(it))
 
-            possibleMoves.add(testgame.board.possibleMoves(it))
         }
-        println(possibleMoves)
 
         if (!testgame.stateMachine.isFinalState(currentState)) {
             print(testgame.board.toASCII())
             println(currentState)
             println("Please input Move")
             input = readLine()
-            inputs.add(Input(input.toString()))
+            val move: Move = testgame.parseMove(input?:"", possibleMoves)
+            if (isValidMove(move)){
+                testgame.executeMove(move)
+                //add movehistory
+                inputs.add(Input("move"))
+            }
         }
 
         else{
