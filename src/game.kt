@@ -99,9 +99,11 @@ class Game(){
         var moveFrom = Square(positionX = 10,positionY = 10)
         var y = 0
         var x = 0
+        var special:String? = null
+        var bool = false
         if (input.isNotEmpty())
             when {
-                input[0] in 'a'..'h' -> {
+                input[0] in 'a'..'h' && input[1] !='x' -> {
                     y = input[0].toInt()-97
                     x = input[1].toInt()-49
                     moves.forEach {
@@ -109,16 +111,52 @@ class Game(){
                     }
                 }
                 input.contains('x') -> {
-                    // capture
+                    special = "capture "
+                    when {
+
+                        input [1] == 'x' ->{
+                            y = input[2].toInt()-97
+                            x = input[3].toInt()-49
+                        }
+                        input [2] == 'x' ->{
+                            y = input[3].toInt()-97
+                            x = input[4].toInt()-49
+                        }
+                        input [3] == 'x' ->{
+                            y = input[4].toInt()-97
+                            x = input[5].toInt()-49
+                        }
+                    }
+                }
+                input[1] in 'a'..'h' && input[2] !in 'a'..'h' -> {
+                    y = input[1].toInt()-97
+                    x = input[2].toInt()-49
+                    moves.forEach {
+                        if (it[0].getType()==input[0]) {
+                            if (it.contains(this.board.squares[x][y])) {
+                                moveFrom = it[0]
+
+                                if (bool) {
+                                    moveFrom = Square(positionX = 10,positionY = 10)
+                                }
+                                bool = true
+                            }
+                        }
+                    }
                 }
                 else -> {
-                    // move by a piece which is not a pawn
+                    y = input[2].toInt()-97
+                    x = input[3].toInt()-49
+                    moves.forEach {
+                        if (it[0].getType()==input[0] && it[0].getY() == (input[1].toInt()-49)) {
+                                moveFrom = it[0]
+                        }
+                    }
                 }
             }
 
-        return Move(moveFrom,this.board.squares[x][y])
+        return Move(moveFrom, this.board.squares[x][y], special)
     }
-
     fun executeMove(move: Move){
         this.board.basicMove(move.squareFrom, move.squareTo)
     }
