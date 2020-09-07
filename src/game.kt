@@ -113,43 +113,79 @@ class Game(){
                 input.contains('x') -> {
                     special = "capture "
                     when {
-
                         input [1] == 'x' ->{
                             y = input[2].toInt()-97
                             x = input[3].toInt()-49
+                            moves.forEach {
+                                if (it[0].getType()==input[0] || (it[0].getType()=='P' && (it[0].getY()==input[0].toInt()-97))) {
+                                    if (it.contains(this.board.squares[x][y])) {
+                                        moveFrom = it[0]
+
+                                        if (bool) {
+                                            moveFrom = Square(positionX = 10,positionY = 10)
+                                        }
+                                        bool = true
+                                    }
+                                }
+                            }
                         }
                         input [2] == 'x' ->{
                             y = input[3].toInt()-97
                             x = input[4].toInt()-49
+                            moves.forEach {
+                                if (it[0].getType()==input[0] && it[0].getY()==input[1].toInt()-97){
+                                    moveFrom = it[0]
+                                }
+                            }
                         }
                         input [3] == 'x' ->{
                             y = input[4].toInt()-97
                             x = input[5].toInt()-49
+                            moves.forEach {
+                                if (it[0].getType()==input[0] && it[0].getY()==input[1].toInt()-97 && it[0].getX()==input[2].toInt()-49){
+                                    moveFrom = it[0]
+                                }
+                            }
                         }
                     }
                 }
                 input[1] in 'a'..'h' && input[2] !in 'a'..'h' -> {
                     y = input[1].toInt()-97
                     x = input[2].toInt()-49
-                    moves.forEach {
-                        if (it[0].getType()==input[0]) {
-                            if (it.contains(this.board.squares[x][y])) {
-                                moveFrom = it[0]
+                    if(!this.board.squares[x][y].hasPiece()){
+                        moves.forEach {
+                            if (it[0].getType()==input[0]) {
+                                if (it.contains(this.board.squares[x][y])) {
+                                    moveFrom = it[0]
 
-                                if (bool) {
-                                    moveFrom = Square(positionX = 10,positionY = 10)
+                                    if (bool) {
+                                        moveFrom = Square(positionX = 10,positionY = 10)
+                                    }
+                                    bool = true
                                 }
-                                bool = true
+                            }
+                        }
+                    }
+                }
+                input.length==4 ->{
+                    y = input[2].toInt()-97
+                    x = input[3].toInt()-49
+                    if(!this.board.squares[x][y].hasPiece()){
+                        moves.forEach {
+                            if (it[0].getType()==input[0] && it[0].getY() == (input[1].toInt()-97)) {
+                                moveFrom = it[0]
                             }
                         }
                     }
                 }
                 else -> {
-                    y = input[2].toInt()-97
-                    x = input[3].toInt()-49
-                    moves.forEach {
-                        if (it[0].getType()==input[0] && it[0].getY() == (input[1].toInt()-49)) {
+                    y = input[3].toInt()-97
+                    x = input[4].toInt()-49
+                    if(!this.board.squares[x][y].hasPiece()) {
+                        moves.forEach {
+                            if (it[0].getType() == input[0] && it[0].getY() == input[1].toInt() - 97 && it[0].getX() == input[2].toInt() - 49) {
                                 moveFrom = it[0]
+                            }
                         }
                     }
                 }

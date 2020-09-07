@@ -50,6 +50,7 @@ fun main(){
     val inputs = mutableListOf<Input>()
     var input: String?
     val moveHistory = arrayListOf<Move>()
+    val capturedPieces: MutableSet<Piece> = mutableSetOf()
 
     while(true) {
 
@@ -68,12 +69,16 @@ fun main(){
 
             print(testgame.board.toASCII())
             println(currentState)
+            println(capturedPieces)
             println("Please input Move")
 
             input = readLine()
             val move: Move = testgame.parseMove(input?:"", possibleMoves)
 
             if (isValidMove(move)){
+                if (move.special == "capture "){
+                    capturedPieces.add(move.squareTo.piece!!)
+                }
                 testgame.executeMove(move)
                 moveHistory.add(move)
                 inputs.add(Input("move"))
