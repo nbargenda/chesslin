@@ -12,11 +12,11 @@ class Square(var piece: Piece? = null, val positionX: Int, val positionY: Int){
         return this.piece?.getColor()
     }
     fun getType(): Char?{
-        return this.piece?.getType()
+        return this.piece?.type
     }
 
     fun getHasMoved(): Boolean?{
-        return this.piece?.getHasMoved()
+        return this.piece?.hasMoved
     }
 
     fun emptySquare(){
@@ -134,6 +134,7 @@ class Board(){
         val x = square.getX()
         val y = square.getY()
         val possibleSquares = mutableSetOf<List<Int>>()
+
         possibleMoves.forEach {
             if (square.getType()=='R' || square.getType()=='Q') {
                 if (it[0] > 0 && (it[1]) == 0)      possibleSquaresUp.add(listOf(x + it[0], y))
@@ -206,7 +207,7 @@ class Board(){
         for(i in 7 downTo 0){
             for(j in 0..7){
                 if (this.squares[i][j].hasPiece()){
-                    string += this.squares[i][j].getColor()+this.squares[i][j].piece!!.getType()
+                    string += this.squares[i][j].getColor()+this.squares[i][j].piece!!.type
                 }
                 else {
                     string += "_ "
@@ -271,6 +272,7 @@ fun mapToASCII(string: String): String{
 fun main(){
 
     val testgame = Game()
+    testgame.startingPosition()
+    print(testgame.board.toASCII())
 
 }
-

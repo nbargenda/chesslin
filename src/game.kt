@@ -52,6 +52,7 @@ class Game(){
     private val s2 = State ("White Check")
     private val s3 = State ("Black Check")
     private val s4 = State ( "Checkmate")
+
     val stateMachine = StateMachine(
         states = setOf(s0, s1, s2, s3, s4),
         inputs = setOf(a0, a1, a2),
@@ -60,6 +61,22 @@ class Game(){
                 a0 -> when (state) {
                     s0 -> s1
                     s1 -> s0
+                    s2 -> s1
+                    s3 -> s0
+                    else -> state
+                }
+                a1 -> when (state) {
+                    s0 -> s3
+                    s1 -> s2
+                    s2 -> s2
+                    s3 -> s3
+                    else -> state
+                }
+                a2 -> when (state) {
+                    s0 -> s4
+                    s1 -> s4
+                    s2 -> s4
+                    s3 -> s4
                     else -> state
                 }
                 else -> state
