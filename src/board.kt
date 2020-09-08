@@ -25,26 +25,28 @@ class Board(){
         return result
     }
 
-    fun possibleMoves(square: Square): MutableSet<Square>{
+    private fun possibleMoves(square: Square): MutableSet<Square>{
         val result = mutableSetOf<Square>()
         if (square.getType()=='P'){
             if(square.getColor()=="w" && !this.squares[square.getX()+1][square.getY()].hasPiece()){
+
                 if (!square.getHasMoved()!! && !this.squares[square.getX()+2][square.getY()].hasPiece() )
                     result.add(this.squares[square.getX()+2][square.getY()])
                 result.add(this.squares[square.getX()+1][square.getY()])
+
             }
-            else if(!this.squares[square.getX()-1][square.getY()].hasPiece()){
+            else if(square.getColor()=="b" && !this.squares[square.getX()-1][square.getY()].hasPiece()){
                 if (!square.getHasMoved()!! && !this.squares[square.getX()-2][square.getY()].hasPiece() )
                     result.add(this.squares[square.getX()-2][square.getY()])
                 result.add(this.squares[square.getX()-1][square.getY()])
             }
+
         }
-        else {
-            val threatenedSquares = threatenedSquares(square)
-            threatenedSquares.forEach {
+        val threatenedSquares = threatenedSquares(square)
+        threatenedSquares.forEach {
                 if (it.getColor()!=square.getColor()) result.add(it)
             }
-        }
+
         return result
     }
 
@@ -81,8 +83,14 @@ class Board(){
     }
     private fun threatenedSquaresPawn(square: Square): MutableSet<Square>{
         val result = mutableSetOf<Square>()
-        if (square.getY()>0) result.add(this.squares[square.getX()+1][square.getY()-1])
-        if (square.getY()<7) result.add(this.squares[square.getX()+1][square.getY()+1])
+        if (square.getType() =='w'){
+            if (square.getY()>0) result.add(this.squares[square.getX()+1][square.getY()-1])
+            if (square.getY()<7) result.add(this.squares[square.getX()+1][square.getY()+1])
+        }
+        else {
+            if (square.getY()>0) result.add(this.squares[square.getX()-1][square.getY()-1])
+            if (square.getY()<7) result.add(this.squares[square.getX()-1][square.getY()+1])
+        }
         return result
     }
 

@@ -49,7 +49,6 @@ fun main(){
     testgame.startingPosition()
     val inputs = mutableListOf<Input>()
     var input: String?
-    val moveHistory = arrayListOf<Move>()
     val capturedPieces: MutableSet<Piece> = mutableSetOf()
 
     while(true) {
@@ -61,8 +60,7 @@ fun main(){
         currentPieces = if (currentState.value[0] == 'w') testgame.board.getWhitePieces(pieces)
             else testgame.board.getBlackPieces(pieces)
         currentPieces.forEach {
-            if (testgame.board.hasMoves(it))  possibleMoves.add(testgame.board.possibleMovesSquare(it))
-
+            if (testgame.board.hasMoves(it)) possibleMoves.add(testgame.board.possibleMovesSquare(it))
         }
 
         if (!testgame.stateMachine.isFinalState(currentState)) {
@@ -80,14 +78,14 @@ fun main(){
                     capturedPieces.add(move.squareTo.piece!!)
                 }
                 testgame.executeMove(move)
-                moveHistory.add(move)
                 inputs.add(Input("move"))
             }
         }
 
         else{
             println("CHECKMATE")
-            print("Moves:$inputs")
+            println("Moves:$inputs")
+            println("Move History:"+testgame.moveHistory.toString())
             break
         }
     }
