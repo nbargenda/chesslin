@@ -1,6 +1,9 @@
+val defaultSquare = Square(positionX = 42,positionY = 69)
+val defaultMove   = Move(defaultSquare, defaultSquare)
+
+
 class Game(){
     val board = Board()
-    val moveHistory = arrayListOf<Move>()
 
     fun startingPosition(){
         for (i in 0..7){
@@ -95,7 +98,7 @@ class Game(){
     }
 
     private fun parsePawnMove(input: String, moves: MutableSet<ArrayList<Square>>): Move{
-        var moveFrom = Square(positionX = 10,positionY = 10)
+        var moveFrom = defaultSquare
         val y = input[0].toInt()-97
         val x = input[1].toInt()-49
         moves.forEach {
@@ -105,7 +108,7 @@ class Game(){
     }
 
     private fun parse5Move(input: String, moves: MutableSet<ArrayList<Square>>): Move{
-        var moveFrom = Square(positionX = 10,positionY = 10)
+        var moveFrom = defaultSquare
         val y = input[3].toInt()-97
         val x = input[4].toInt()-49
         if(!this.board.squares[x][y].hasPiece()) {
@@ -120,7 +123,7 @@ class Game(){
     }
 
     private fun parsePieceMove(input: String, moves: MutableSet<ArrayList<Square>>): Move{
-        var moveFrom = Square(positionX = 10,positionY = 10)
+        var moveFrom = defaultSquare
         val y = input[1].toInt()-97
         val x = input[2].toInt()-49
         var bool = false
@@ -131,7 +134,7 @@ class Game(){
                         moveFrom = it[0]
 
                         if (bool) {
-                            moveFrom = Square(positionX = 10,positionY = 10)
+                            moveFrom = defaultSquare
                         }
                         bool = true
                     }
@@ -143,7 +146,7 @@ class Game(){
     }
 
     private fun parse4Move(input: String, moves: MutableSet<ArrayList<Square>>): Move{
-        var moveFrom = Square(positionX = 10,positionY = 10)
+        var moveFrom = defaultSquare
         val y = input[2].toInt()-97
         val x = input[3].toInt()-49
         if(!this.board.squares[x][y].hasPiece()){
@@ -157,20 +160,22 @@ class Game(){
     }
 
     private fun capture1(input: String, moves: MutableSet<ArrayList<Square>>): Move{
-        var moveFrom = Square(positionX = 10,positionY = 10)
+        var moveFrom = defaultSquare
         val y = input[2].toInt()-97
         val x = input[3].toInt()-49
-        val special = "capture "
+        val special: String
+        special = if (this.board.squares[x][y].hasPiece()) "capture "
+                  else "en passante "
         var bool = false
         moves.forEach {
-            if (it[0].getType()==input[0] || (it[0].getType()=='P' && (it[0].getY()==input[0].toInt()-97))) {
-                print("boop")
+            if (it[0].getType()==input[0] || (it[0].getType()=='P' && ((it[0].getY()==input[0].toInt()-97) || special == "en passante "))) {
+                print("why not")
                 if (it.contains(this.board.squares[x][y])) {
-                    print("yeet")
+                    print("why yes")
                     moveFrom = it[0]
 
                     if (bool) {
-                        moveFrom = Square(positionX = 10,positionY = 10)
+                        moveFrom = defaultSquare
                     }
                     bool = true
                 }
@@ -180,11 +185,23 @@ class Game(){
         return Move(moveFrom, this.board.squares[x][y], special)
     }
 
+    fun enPassantWhite(move: Move){
+        this.board.basicMove(move.squareFrom, move.squareTo)
+        this.board.squares[move.squareTo.getX()-1][move.squareTo.getY()].emptySquare()
+    }
+
+    fun enPassantBlack(move: Move){
+        this.board.basicMove(move.squareFrom, move.squareTo)
+        this.board.squares[move.squareTo.getX()+1][move.squareTo.getY()].emptySquare()
+    }
+
     private fun capture2(input: String, moves: MutableSet<ArrayList<Square>>): Move{
-        var moveFrom = Square(positionX = 10,positionY = 10)
-        val special = "capture "
+        var moveFrom = defaultSquare
         val y = input[3].toInt()-97
         val x = input[4].toInt()-49
+        val special: String
+        special = if (this.board.squares[x][y].hasPiece()) "capture "
+                  else "en passante "
         moves.forEach {
             if (it[0].getType()==input[0] && it[0].getY()==input[1].toInt()-97){
                 moveFrom = it[0]
@@ -196,7 +213,7 @@ class Game(){
     }
 
     private fun capture3(input: String, moves: MutableSet<ArrayList<Square>>): Move{
-        var moveFrom = Square(positionX = 10,positionY = 10)
+        var moveFrom = defaultSquare
         val special = "capture "
         val y = input[4].toInt()-97
         val x = input[5].toInt()-49
@@ -209,7 +226,6 @@ class Game(){
     }
 
     private fun parseCapture(input: String, moves: MutableSet<ArrayList<Square>>): Move{
-        print("capture")
         return when {
             input [1] == 'x' -> capture1(input, moves)
             input [2] == 'x' -> capture2(input, moves)
@@ -227,12 +243,11 @@ class Game(){
                 input.length==4                               -> parse4Move(input, moves)
                 else                                          -> parse5Move(input, moves)
             }
-        else Move(Square(positionX = 10,positionY = 10),Square(positionX = 10,positionY = 10))
+        else defaultMove
     }
 
 
     fun executeMove(move: Move){
-        this.moveHistory.add(move)
         this.board.basicMove(move.squareFrom, move.squareTo)
     }
 }

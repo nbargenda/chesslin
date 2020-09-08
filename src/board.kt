@@ -3,6 +3,7 @@ class Board(){
 
 
     var squares = arrayListOf<ArrayList<Square>>()
+    val moveHistory = arrayListOf<Move>()
 
     init{
         for(i in 0..7){
@@ -81,16 +82,52 @@ class Board(){
             else -> setOf()
         }
     }
+
+    private fun checkEnPassanteLeft(square: Square, lastMove: Move): Boolean{
+        return if (square.getColor()=="w"){
+            lastMove.squareTo.getType()=='P' && lastMove.squareFrom.getX()==square.getX()+2 &&
+                    lastMove.squareFrom.getY()==square.getY()-1 && lastMove.squareTo.getY()==square.getY()-1 &&
+                    lastMove.squareTo.getX()==square.getX()
+        } else{
+            lastMove.squareTo.getType()=='P' && lastMove.squareFrom.getX()==square.getX()-2 &&
+                    lastMove.squareFrom.getY()==square.getY()-1 && lastMove.squareTo.getY()==square.getY()-1 &&
+                    lastMove.squareTo.getX()==square.getX()
+        }
+    }
+
+    private fun checkEnPassanteRight(square: Square, lastMove: Move): Boolean{
+        return if (square.getColor()=="w"){
+            lastMove.squareTo.getType()=='P' && lastMove.squareFrom.getX()==square.getX()+2 &&
+                    lastMove.squareFrom.getY()==square.getY()+1 && lastMove.squareTo.getY()==square.getY()+1 &&
+                    lastMove.squareTo.getX()==square.getX()
+        } else{
+            lastMove.squareTo.getType()=='P' && lastMove.squareFrom.getX()==square.getX()-2 &&
+                    lastMove.squareFrom.getY()==square.getY()+1 && lastMove.squareTo.getY()==square.getY()+1 &&
+                    lastMove.squareTo.getX()==square.getX()
+        }
+    }
+
     private fun threatenedSquaresPawn(square: Square): MutableSet<Square>{
+        var lastMove = defaultMove
         val result = mutableSetOf<Square>()
-        if (square.getType() =='w'){
-            if (square.getY()>0) result.add(this.squares[square.getX()+1][square.getY()-1])
-            if (square.getY()<7) result.add(this.squares[square.getX()+1][square.getY()+1])
+        if (this.moveHistory.isNotEmpty()) {
+            lastMove = this.moveHistory.last()
         }
+
+        if (square.getColor() == "w"){
+            if (square.getY()>0 && (this.squares[square.getX()+1][square.getY()-1].hasPiece() || checkEnPassanteLeft(square, lastMove)))
+                result.add(this.squares[square.getX()+1][square.getY()-1])
+            if (square.getY()<7 && (this.squares[square.getX()+1][square.getY()+1].hasPiece() || checkEnPassanteRight(square, lastMove)))
+                result.add(this.squares[square.getX()+1][square.getY()+1])
+        }
+
         else {
-            if (square.getY()>0) result.add(this.squares[square.getX()-1][square.getY()-1])
-            if (square.getY()<7) result.add(this.squares[square.getX()-1][square.getY()+1])
+            if (square.getY()>0 && (this.squares[square.getX()-1][square.getY()-1].hasPiece() || checkEnPassanteLeft(square, lastMove)))
+                result.add(this.squares[square.getX()-1][square.getY()-1])
+            if (square.getY()<7 && (this.squares[square.getX()-1][square.getY()+1].hasPiece() || checkEnPassanteRight(square, lastMove)))
+                result.add(this.squares[square.getX()-1][square.getY()+1])
         }
+
         return result
     }
 
@@ -203,6 +240,7 @@ class Board(){
     }
 
     fun basicMove(squareA: Square, squareB: Square){
+        this.moveHistory.add(Move(squareA,squareB))
         squareB.putPiece(squareA.piece!!)
         squareB.piece!!.setHasMoved()
         squareA.emptySquare()

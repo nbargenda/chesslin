@@ -74,10 +74,30 @@ fun main(){
             val move: Move = testgame.parseMove(input?:"", possibleMoves)
 
             if (isValidMove(move)){
+
                 if (move.special == "capture "){
                     capturedPieces.add(move.squareTo.piece!!)
+                    testgame.executeMove(move)
+
                 }
-                testgame.executeMove(move)
+
+                else if (move.special == "en passante "){
+                    if (move.squareFrom.getColor()=="w"){
+                        testgame.board.squares[move.squareTo.getX()-1][move.squareTo.getY()].piece?.let {
+                            capturedPieces.add(it)
+                        }
+                        testgame.enPassantWhite(move)
+                    }
+                    else{
+                        testgame.board.squares[move.squareTo.getX()+1][move.squareTo.getY()].piece?.let {
+                            capturedPieces.add(it)
+                        }
+                        testgame.enPassantBlack(move)
+                    }
+                }
+                else{
+                    testgame.executeMove(move)
+                }
                 inputs.add(Input("move"))
             }
         }
@@ -85,7 +105,7 @@ fun main(){
         else{
             println("CHECKMATE")
             println("Moves:$inputs")
-            println("Move History:"+testgame.moveHistory.toString())
+            println("Move History:"+testgame.board.moveHistory.toString())
             break
         }
     }
