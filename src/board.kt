@@ -1,3 +1,6 @@
+import java.lang.IndexOutOfBoundsException
+import java.lang.NullPointerException
+import kotlin.math.absoluteValue
 
 class Board(){
 
@@ -18,6 +21,20 @@ class Board(){
 
     fun hasMoves(square: Square): Boolean{
          return possibleMoves(square).isNotEmpty()
+    }
+
+    fun removePinnedMoves(possibleMoves: MutableSet<ArrayList<Square>>, otherMoves: MutableSet<ArrayList<Square>>): MutableSet<ArrayList<Square>> {
+        val result = mutableSetOf<ArrayList<Square>>()
+        possibleMoves.forEach {
+            val pinningPiece = isPinned(it[0], otherMoves)
+            if(pinningPiece.hasPiece()){
+                it.forEach { square->
+                    if (square != pinningPiece) result.add(it)
+                }
+            }
+        }
+        possibleMoves.removeAll(result)
+        return possibleMoves
     }
 
     fun possibleMovesSquare(square: Square): ArrayList<Square>{
@@ -77,9 +94,135 @@ class Board(){
         return false
     }
 
-    // NEXT!!!!!
-    private fun isPinned(square: Square): Boolean{
-        return false
+    private fun isPinned(square: Square, otherMoves: MutableSet<ArrayList<Square>>): Square{
+        val kingSquare = findKing(square.getColor())
+        val threateningSquares: MutableSet<Square> = mutableSetOf()
+        if (square.getType() == 'K') return defaultSquare
+        if (square.getX() != kingSquare.getX() && square.getY() != kingSquare.getY() &&
+            ((square.getX()-kingSquare.getX()).absoluteValue != (square.getY()-kingSquare.getY()).absoluteValue))
+            return defaultSquare
+
+        otherMoves.forEach {
+            try{
+                if (it[0].getType()!! in "QBR"){
+                    it.forEach{threatSquare->
+                        if (square == threatSquare) threateningSquares.add(it[0])
+                    }
+                }
+            }
+            catch(e: NullPointerException){
+                return defaultSquare
+            }
+        }
+        threateningSquares.forEach {
+            when {
+                it.getX() > square.getX() ->{
+                    when {
+                        it.getY() < square.getY() ->{
+                            val x = square.getX()
+                            val y = square.getY()
+                            for (i in 1..(maxOf(x,y)..7).count()){
+                                try{
+                                    if(this.squares[x-i][y+i].hasPiece()){
+                                        if(this.squares[x-i][y+i].getType() == 'K') return it
+                                        return defaultSquare
+                                    }
+                                }
+                                catch(e: IndexOutOfBoundsException){
+                                    return defaultSquare
+                                }
+                            }
+                        } // unten rechts
+                        it.getY() > square.getY() ->{
+                            val x = square.getX()
+                            val y = square.getY()
+                            for (i in 1..(maxOf(x,y)..7).count()){
+                                try{
+                                    if(this.squares[x-i][y-i].hasPiece()){
+                                        if(this.squares[x-i][y-i].getType() == 'K') return it
+                                        return defaultSquare
+                                    }
+                                }
+                                catch(e: IndexOutOfBoundsException){
+                                    return defaultSquare
+                                }
+                            }
+                        } // unten links
+                        else->{
+                            for (i in square.getX()-1 downTo 0){
+                                if(this.squares[i][it.getY()].hasPiece()){
+                                    if(this.squares[i][it.getY()].getType() =='K') return it
+                                    return defaultSquare
+                                }
+                            }
+                        }
+                    }
+                }
+                it.getX() < square.getX() ->{
+                    when {
+                        it.getY() < square.getY() ->{
+                            val x = square.getX()
+                            val y = square.getY()
+                            for (i in 1..(maxOf(x,y)..7).count()){
+                                try{
+                                    if(this.squares[x+i][y+i].hasPiece()){
+                                        if(this.squares[x+i][y+i].getType() == 'K') return it
+                                        return defaultSquare
+                                    }
+                                }
+                                catch(e: IndexOutOfBoundsException){
+                                    return defaultSquare
+                                }
+                            }
+                        } // oben rechts
+                        it.getY() > square.getY() ->{
+                            val x = square.getX()
+                            val y = square.getY()
+                            for (i in 1..(maxOf(x,y)..7).count()){
+                                try{
+                                    if(this.squares[x+i][y-i].hasPiece()){
+                                        if(this.squares[x+i][y-i].getType() == 'K') return it
+                                        return defaultSquare
+                                    }
+                                }
+                                catch(e: IndexOutOfBoundsException){
+                                    return defaultSquare
+                                }
+                            }
+                        } // oben links
+                        else->{
+                            for (i in square.getX()+1 ..7){
+                                if(this.squares[i][it.getY()].hasPiece()){
+                                    if(this.squares[i][it.getY()].getType() =='K') return it
+                                    return defaultSquare
+                                }
+                            }
+                        }
+                    }
+                }
+
+                else -> {
+                    if(it.getY() < square.getY()){
+                        for (i in square.getY()+1..7){
+                            if(this.squares[it.getX()][i].hasPiece()){
+                                if(this.squares[it.getX()][i].getType() == 'K') return it
+                                return defaultSquare
+                            }
+                        }
+                    }
+                    else{
+                        for (i in square.getY()-1 downTo 0){
+                            if(this.squares[it.getX()][i].hasPiece()){
+                                if(this.squares[it.getX()][i].getType() == 'K') return it
+                                return defaultSquare
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return defaultSquare
     }
 
     fun possibleMovesCheck(moves: MutableSet<ArrayList<Square>>, otherMoves: MutableSet<ArrayList<Square>>): MutableSet<ArrayList<Square>>{
@@ -110,7 +253,7 @@ class Board(){
                 when (it[0].getType()) {
                     'K' -> if (!threatenedSquares.contains(it[1])) result.add(it)
                     else -> {
-                        if(isPinned(it[0])){
+                        if(isPinned(it[0], otherMoves).hasPiece()){
                             checkSquares.forEach { checkSquare->
                                 when (checkSquare.getType()){
                                     'P','N' -> {

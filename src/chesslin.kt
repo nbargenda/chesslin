@@ -1,3 +1,4 @@
+import java.io.StringWriter
 import java.lang.NullPointerException
 
 fun bound(int: Int): Int{
@@ -56,10 +57,10 @@ fun main(){
 
         val currentState = testgame.transition(testgame.stateMachine, inputs)
         var possibleMoves:MutableSet<ArrayList<Square>> = mutableSetOf()
-        val pieces = testgame.board.getPieces()
+        var pieces = testgame.board.getPieces()
         val currentPieces:MutableSet<Square>
-        val otherPieces:MutableSet<Square>
-        val otherMoves:MutableSet<ArrayList<Square>> = mutableSetOf()
+        var otherPieces:MutableSet<Square>
+        var otherMoves:MutableSet<ArrayList<Square>> = mutableSetOf()
         if (currentState.value[0] == 'w') {
             currentPieces = testgame.board.getWhitePieces(pieces)
             otherPieces   = testgame.board.getBlackPieces(pieces)
@@ -72,11 +73,12 @@ fun main(){
         currentPieces.forEach {
             if (testgame.board.hasMoves(it)) possibleMoves.add(testgame.board.possibleMovesSquare(it))
         }
+        otherPieces.forEach {
+            if (testgame.board.hasMoves(it)) otherMoves.add(testgame.board.possibleMovesSquare(it))
+        }
+        possibleMoves = testgame.board.removePinnedMoves(possibleMoves, otherMoves)
 
         if ("Check" in currentState.value) {
-            otherPieces.forEach {
-                if (testgame.board.hasMoves(it)) otherMoves.add(testgame.board.possibleMovesSquare(it))
-            }
             possibleMoves = testgame.board.possibleMovesCheck(possibleMoves, otherMoves)
         }
 
@@ -98,6 +100,7 @@ fun main(){
                         when {
                             move.special.contains('x') -> {
                                 capturedPieces.add(move.squareTo.piece!!)
+                                otherPieces.remove(move.squareTo)
                                 testgame.executeMove(move)
                             }
                             move.special.contains('e') -> {
@@ -126,26 +129,41 @@ fun main(){
                         testgame.executeMove(move)
                     }
                     testgame.board.moveHistory.add(move)
+                    pieces = testgame.board.getPieces()
+                    otherMoves = mutableSetOf()
+                    otherPieces = if (currentState.value[0] == 'w') testgame.board.getBlackPieces(pieces)
+                                  else testgame.board.getWhitePieces(pieces)
+
                     possibleMoves.remove(testgame.board.possibleMovesSquare(move.squareFrom))
                     possibleMoves.add(testgame.board.possibleMovesSquare(move.squareTo))
-                    if(checkIfCheck(possibleMoves, currentState.value[0])) inputs.add(Input("check"))
-                    else inputs.add(Input("move"))
+
+                    otherPieces.forEach {
+                        if (testgame.board.hasMoves(it)) otherMoves.add(testgame.board.possibleMovesSquare(it))
+                    }
+                    if (checkIfCheck(possibleMoves, currentState.value[0])) {
+                        otherMoves = testgame.board.possibleMovesCheck(otherMoves, possibleMoves)
+                    }
+                    when {
+                        otherMoves.isEmpty() -> inputs.add(Input("checkmate"))
+                        checkIfCheck(possibleMoves, currentState.value[0]) -> inputs.add(Input("check"))
+                        else -> inputs.add(Input("move"))
+                    }
                 }
 
                 catch (e: NullPointerException){
-                    println(e.stackTrace)
+                    e.printStackTrace()
                 }
             }
         }
 
         else{
+            print(testgame.board.toASCII())
             println("CHECKMATE")
-            println("Moves:$inputs")
-            println("Move History:"+testgame.board.moveHistory.toString())
             break
         }
     }
 }
+
 
 fun checkIfCheck(moves: MutableSet<ArrayList<Square>>, color: Char): Boolean{
 

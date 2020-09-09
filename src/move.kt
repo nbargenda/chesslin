@@ -80,5 +80,3 @@ class Move(val squareFrom: Square, val squareTo: Square, val special: String? = 
 
 
 }
-
-
