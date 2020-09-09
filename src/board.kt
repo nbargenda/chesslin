@@ -26,6 +26,114 @@ class Board(){
         return result
     }
 
+    private fun findKing(color: String?): Square{
+        val pieces = getPieces()
+        pieces.forEach {
+            if (it.getType() == 'K' && it.getColor() == color) return it
+        }
+        return defaultSquare
+    }
+
+// ASCII square
+    private fun wouldPinItself(square: Square, squareThatChecks: Square): Boolean{
+        val kingSquare = findKing(square.getColor())
+        val threatenedSquares = threatenedSquaresRBQ(squareThatChecks)
+        // squarethatchecks is ALWAYS Q,B,R
+        // remove squares from threatenedsquares so that it only has teh squares between squarethatchecks and kingsquare
+        var where = "" // from king
+        when {
+            kingSquare.getX() > squareThatChecks.getX() -> {
+                where = when {
+                    kingSquare.getY() > squareThatChecks.getY() ->  "ld"
+                    kingSquare.getY() < squareThatChecks.getY() ->  "rd"
+                    else ->  "ds"
+                }
+            }
+            kingSquare.getX() < squareThatChecks.getX() -> {
+                where = when {
+                    kingSquare.getY() > squareThatChecks.getY() -> "lu"
+                    kingSquare.getY() < squareThatChecks.getY() -> "ru"
+                    else -> "us"
+                }
+            }
+            else -> {
+                where = if (kingSquare.getY() < squareThatChecks.getY()) "rs"
+                        else "ls"
+            }
+        }
+
+        threatenedSquares.forEach {
+            when (where){
+                "ld" ->{if(square.getX() > it.getX() && square.getY() > it.getY() && square == it) return true}
+                "rd" ->{if(square.getX() > it.getX() && square.getY() < it.getY() && square == it) return true}
+                "lu" ->{if(square.getX() < it.getX() && square.getY() > it.getY() && square == it) return true}
+                "ru" ->{if(square.getX() < it.getX() && square.getY() < it.getY() && square == it) return true}
+                "ds" ->{if (it.getY() == kingSquare.getY() && it.getX() > squareThatChecks.getX()) return true}
+                "us" ->{if (it.getY() == kingSquare.getY() && it.getX() < squareThatChecks.getX()) return true}
+                "rs" ->{if (it.getX() == kingSquare.getX() && it.getY() < squareThatChecks.getY()) return true}
+                "ls" ->{if (it.getX() == kingSquare.getX() && it.getY() > squareThatChecks.getY()) return true}
+            }
+        }
+        return false
+    }
+
+    // NEXT!!!!!
+    private fun isPinned(square: Square): Boolean{
+        return false
+    }
+
+    fun possibleMovesCheck(moves: MutableSet<ArrayList<Square>>, otherMoves: MutableSet<ArrayList<Square>>): MutableSet<ArrayList<Square>>{
+        val result = mutableSetOf<ArrayList<Square>>()
+        var threats = 0
+        val king = findKing(moves.first()[0].getColor())
+        val checkSquares = mutableSetOf<Square>()
+        val threatenedSquares = mutableSetOf<Square>()
+        // find out if 1 or 2 threats
+        // if 1 = can kill/block threat IF NOT PINNED
+        // if 2+ = only king can move, OR maybe block?
+        otherMoves.forEach {
+            if (it.contains(king)) {
+                threats++
+                checkSquares.add(it[0])
+            }
+            threatenedSquares.addAll(threatenedSquares(it[0]))
+        }
+        if (threats>1){
+            moves.forEach {
+                if (it[0].getType() == 'K'){
+                    if (!threatenedSquares.contains(it[1])) result.add(it)
+                }
+            }
+        }
+        else {
+            moves.forEach{
+                when (it[0].getType()) {
+                    'K' -> if (!threatenedSquares.contains(it[1])) result.add(it)
+                    else -> {
+                        if(isPinned(it[0])){
+                            checkSquares.forEach { checkSquare->
+                                when (checkSquare.getType()){
+                                    'P','N' -> {
+                                        it.forEach{square->
+                                            if (square!=it[0] && square == checkSquare) result.add(arrayListOf(it[0], square))
+                                        }
+                                    }
+                                    'Q','B','R' -> {
+                                        it.forEach{square->
+                                            if (square!=it[0] && ((square == checkSquare) || (wouldPinItself(square, checkSquares.first())))) result.add(arrayListOf(it[0], square))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return result
+    }
+
     private fun possibleMoves(square: Square): MutableSet<Square>{
         val result = mutableSetOf<Square>()
         if (square.getType()=='P'){

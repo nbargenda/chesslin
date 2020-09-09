@@ -1,8 +1,8 @@
 
 class Moves(){
 
-    val pawnMove = setOf<List<Int>>(listOf<Int>(1,0))
-    val knightMove    = setOf<List<Int>>(listOf<Int>(1,2),  listOf(2,1),  listOf<Int>(-1,2),  listOf(-2,1),
+    private val pawnMove = setOf<List<Int>>(listOf<Int>(1,0))
+    private val knightMove    = setOf<List<Int>>(listOf<Int>(1,2),  listOf(2,1),  listOf<Int>(-1,2),  listOf(-2,1),
         listOf<Int>(1,-2), listOf(2,-1), listOf<Int>(-1,-2), listOf(-2,-1))
     var rookMove      = mutableSetOf<List<Int>>()
 
@@ -10,20 +10,20 @@ class Moves(){
         rookMove.addAll(rookMove())
     }
 
-    var bishopMove  = mutableSetOf<List<Int>>()
+    private var bishopMove  = mutableSetOf<List<Int>>()
 
     init {
         bishopMove.addAll(bishopMove())
     }
 
-    var queenMove = mutableSetOf<List<Int>>()
+    private var queenMove = mutableSetOf<List<Int>>()
 
     init {
         queenMove.addAll(bishopMove())
         queenMove.addAll(rookMove())
     }
 
-    val kingMove = setOf<List<Int>>(listOf(1,0), listOf(0,1),   listOf(-1,0), listOf(0,-1),
+    private val kingMove = setOf<List<Int>>(listOf(1,0), listOf(0,1),   listOf(-1,0), listOf(0,-1),
         listOf(1,1), listOf(-1,-1), listOf(-1,1), listOf(1,-1))
 
     /**
@@ -35,14 +35,13 @@ class Moves(){
      */
 
     fun getMove(type: Char?): Set<List<Int>>{
-        when (type){
-            'K' -> return kingMove
-            'Q' -> return queenMove
-            'R' -> return rookMove
-            'B' -> return bishopMove
-            'N' -> return knightMove
-            'P' -> return pawnMove
-            else -> return kingMove
+        return when (type){
+            'K' -> kingMove
+            'Q' -> queenMove
+            'R' -> rookMove
+            'B' -> bishopMove
+            'N' -> knightMove
+            else -> pawnMove
         }
     }
 }

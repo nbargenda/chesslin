@@ -55,13 +55,29 @@ fun main(){
     while(true) {
 
         val currentState = testgame.transition(testgame.stateMachine, inputs)
-        val possibleMoves:MutableSet<ArrayList<Square>> = mutableSetOf()
+        var possibleMoves:MutableSet<ArrayList<Square>> = mutableSetOf()
         val pieces = testgame.board.getPieces()
         val currentPieces:MutableSet<Square>
-        currentPieces = if (currentState.value[0] == 'w') testgame.board.getWhitePieces(pieces)
-            else testgame.board.getBlackPieces(pieces)
+        val otherPieces:MutableSet<Square>
+        val otherMoves:MutableSet<ArrayList<Square>> = mutableSetOf()
+        if (currentState.value[0] == 'w') {
+            currentPieces = testgame.board.getWhitePieces(pieces)
+            otherPieces   = testgame.board.getBlackPieces(pieces)
+        }
+        else{
+            currentPieces = testgame.board.getBlackPieces(pieces)
+            otherPieces   = testgame.board.getWhitePieces(pieces)
+        }
+
         currentPieces.forEach {
             if (testgame.board.hasMoves(it)) possibleMoves.add(testgame.board.possibleMovesSquare(it))
+        }
+
+        if ("Check" in currentState.value) {
+            otherPieces.forEach {
+                if (testgame.board.hasMoves(it)) otherMoves.add(testgame.board.possibleMovesSquare(it))
+            }
+            possibleMoves = testgame.board.possibleMovesCheck(possibleMoves, otherMoves)
         }
 
         if (!testgame.stateMachine.isFinalState(currentState)) {
@@ -109,7 +125,11 @@ fun main(){
                     else {
                         testgame.executeMove(move)
                     }
-                    inputs.add(Input("move"))
+                    testgame.board.moveHistory.add(move)
+                    possibleMoves.remove(testgame.board.possibleMovesSquare(move.squareFrom))
+                    possibleMoves.add(testgame.board.possibleMovesSquare(move.squareTo))
+                    if(checkIfCheck(possibleMoves, currentState.value[0])) inputs.add(Input("check"))
+                    else inputs.add(Input("move"))
                 }
 
                 catch (e: NullPointerException){
@@ -125,4 +145,19 @@ fun main(){
             break
         }
     }
+}
+
+fun checkIfCheck(moves: MutableSet<ArrayList<Square>>, color: Char): Boolean{
+
+    moves.forEach { move ->
+        move.forEach{ square ->
+            if (color=='w'){
+                if (square.getColor()=="b" && square.getType()=='K') return true
+            }
+            else{
+                if (square.getColor()=="w" && square.getType()=='K') return true
+            }
+        }
+    }
+    return false
 }
