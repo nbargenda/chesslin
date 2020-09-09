@@ -141,6 +141,8 @@ class Game(){
                 }
             }
         }
+        if (moveFrom.getType()=='K' && y-moveFrom.getY()>1) return parseCastlingShort(moves)
+        else if (moveFrom.getType()=='K' && moveFrom.getY()-y>1) return parseCastlingLong(moves)
         return Move(moveFrom, this.board.squares[x][y])
 
     }
@@ -164,14 +166,12 @@ class Game(){
         val y = input[2].toInt()-97
         val x = input[3].toInt()-49
         val special: String
-        special = if (this.board.squares[x][y].hasPiece()) "capture "
-                  else "en passante "
+        special = if (this.board.squares[x][y].hasPiece()) "x"
+                  else "enpassante"
         var bool = false
         moves.forEach {
-            if (it[0].getType()==input[0] || (it[0].getType()=='P' && ((it[0].getY()==input[0].toInt()-97) || special == "en passante "))) {
-                print("why not")
+            if (it[0].getType()==input[0] || (it[0].getType()=='P' && ((it[0].getY()==input[0].toInt()-97) || special == "enpassante"))) {
                 if (it.contains(this.board.squares[x][y])) {
-                    print("why yes")
                     moveFrom = it[0]
 
                     if (bool) {
@@ -200,10 +200,10 @@ class Game(){
         val y = input[3].toInt()-97
         val x = input[4].toInt()-49
         val special: String
-        special = if (this.board.squares[x][y].hasPiece()) "capture "
-                  else "en passante "
+        special = if (this.board.squares[x][y].hasPiece()) "x"
+                  else "enpassante"
         moves.forEach {
-            if (it[0].getType()==input[0] && it[0].getY()==input[1].toInt()-97){
+            if (it[0].getType()==input[0] || (it[0].getType()=='P' && ((it[0].getY()==input[1].toInt()-97) || special == "enpassante"))){
                 moveFrom = it[0]
             }
         }
@@ -214,7 +214,7 @@ class Game(){
 
     private fun capture3(input: String, moves: MutableSet<ArrayList<Square>>): Move{
         var moveFrom = defaultSquare
-        val special = "capture "
+        val special = "x"
         val y = input[4].toInt()-97
         val x = input[5].toInt()-49
         moves.forEach {
@@ -233,6 +233,38 @@ class Game(){
         }
     }
 
+    private fun parseCastlingShort(moves: MutableSet<ArrayList<Square>>): Move{
+        if(moves.first()[0].getColor() == "w") {
+            moves.forEach {
+                if (it[0].getType()=='K' && it.contains(this.board.squares[0][6]))
+                    return Move(this.board.squares[0][4], this.board.squares[0][6],"s")
+            }
+        }
+        else {
+            moves.forEach {
+                if (it[0].getType()=='K' && it.contains(this.board.squares[7][6]))
+                    return Move(this.board.squares[7][4], this.board.squares[7][6],"s")
+            }
+        }
+        return defaultMove
+    }
+
+    private fun parseCastlingLong(moves: MutableSet<ArrayList<Square>>): Move{
+        if(moves.first()[0].getColor() == "w") {
+            moves.forEach {
+                if (it[0].getType()=='K' && it.contains(this.board.squares[0][2]))
+                    return Move(this.board.squares[0][4], this.board.squares[0][2],"l")
+            }
+        }
+        else{
+            moves.forEach {
+                if (it[0].getType()=='K' && it.contains(this.board.squares[7][2]))
+                    return Move(this.board.squares[7][4], this.board.squares[7][2],"l")
+            }
+        }
+        return defaultMove
+    }
+
     fun parseMove(input: String, moves: MutableSet<ArrayList<Square>>): Move{
 
         return if (input.isNotEmpty())
@@ -241,6 +273,8 @@ class Game(){
                 input.contains('x')                           -> parseCapture(input, moves)
                 input[1] in 'a'..'h' && input[2] !in 'a'..'h' -> parsePieceMove(input, moves)
                 input.length==4                               -> parse4Move(input, moves)
+                input == "O-O"                                -> parseCastlingShort(moves)
+                input == "O-O-O"                              -> parseCastlingLong(moves)
                 else                                          -> parse5Move(input, moves)
             }
         else defaultMove

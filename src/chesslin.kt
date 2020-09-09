@@ -1,3 +1,5 @@
+import java.lang.NullPointerException
+
 fun bound(int: Int): Int{
     return when (int){
         in 8..16 -> 7
@@ -44,7 +46,6 @@ fun isValidMove(move: Move): Boolean{
 
 fun main(){
 
-
     val testgame = Game()
     testgame.startingPosition()
     val inputs = mutableListOf<Input>()
@@ -75,30 +76,47 @@ fun main(){
 
             if (isValidMove(move)){
 
-                if (move.special == "capture "){
-                    capturedPieces.add(move.squareTo.piece!!)
-                    testgame.executeMove(move)
+                try{
+                    if (!move.special.isNullOrEmpty()){
 
+                        when {
+                            move.special.contains('c') -> {
+                                capturedPieces.add(move.squareTo.piece!!)
+                                testgame.executeMove(move)
+                            }
+                            move.special.contains('e') -> {
+                                if (move.squareFrom.getColor()=="w"){
+                                    testgame.board.squares[move.squareTo.getX()-1][move.squareTo.getY()].piece?.let {
+                                        capturedPieces.add(it)
+                                    }
+                                    testgame.enPassantWhite(move)
+                                } else{
+                                    testgame.board.squares[move.squareTo.getX()+1][move.squareTo.getY()].piece?.let {
+                                        capturedPieces.add(it)
+                                    }
+                                    testgame.enPassantBlack(move)
+                                }
+                            }
+                            move.special.contains('s') ->{
+                                testgame.board.castleShort(currentState.value[0])
+                            }
+                            move.special.contains('l') ->{
+                                testgame.board.castleLong(currentState.value[0])
+                            }
+
+                        }
+                    }
+
+                    else {
+                        testgame.executeMove(move)
+                    }
+                    inputs.add(Input("move"))
                 }
 
-                else if (move.special == "en passante "){
-                    if (move.squareFrom.getColor()=="w"){
-                        testgame.board.squares[move.squareTo.getX()-1][move.squareTo.getY()].piece?.let {
-                            capturedPieces.add(it)
-                        }
-                        testgame.enPassantWhite(move)
-                    }
-                    else{
-                        testgame.board.squares[move.squareTo.getX()+1][move.squareTo.getY()].piece?.let {
-                            capturedPieces.add(it)
-                        }
-                        testgame.enPassantBlack(move)
-                    }
+                catch (e: NullPointerException){
+                    print("oopsie")
+                    println(e.stackTrace)
                 }
-                else{
-                    testgame.executeMove(move)
-                }
-                inputs.add(Input("move"))
             }
         }
 
