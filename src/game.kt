@@ -167,10 +167,10 @@ class Game(){
         val x = input[3].toInt()-49
         val special: String
         special = if (this.board.squares[x][y].hasPiece()) "x"
-                  else "enpassante"
+                  else "e"
         var bool = false
         moves.forEach {
-            if (it[0].getType()==input[0] || (it[0].getType()=='P' && ((it[0].getY()==input[0].toInt()-97) || special == "enpassante"))) {
+            if (it[0].getType()==input[0] || (it[0].getType()=='P' && ((it[0].getY()==input[0].toInt()-97) || special == "e"))) {
                 if (it.contains(this.board.squares[x][y])) {
                     moveFrom = it[0]
 
@@ -201,9 +201,9 @@ class Game(){
         val x = input[4].toInt()-49
         val special: String
         special = if (this.board.squares[x][y].hasPiece()) "x"
-                  else "enpassante"
+                  else "e"
         moves.forEach {
-            if (it[0].getType()==input[0] || (it[0].getType()=='P' && ((it[0].getY()==input[1].toInt()-97) || special == "enpassante"))){
+            if (it[0].getType()==input[0] || (it[0].getType()=='P' && ((it[0].getY()==input[1].toInt()-97) || special == "e"))){
                 moveFrom = it[0]
             }
         }

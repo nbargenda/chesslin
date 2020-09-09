@@ -253,7 +253,6 @@ class Board(){
         return removeInvalidMoves(possibleSquares)
     }
 
-
     private fun threatenedSquaresKnightKing(square: Square): MutableSet<Square>{
         val possibleMoves = moves.getMove(square.getType())
         val possibleSquares: MutableSet<List<Int>> = mutableSetOf()
@@ -262,7 +261,6 @@ class Board(){
         }
         return removeInvalidMoves(possibleSquares)
     }
-
 
     fun getPieces(): MutableSet<Square>{
         val result = mutableSetOf<Square>()
@@ -340,7 +338,6 @@ class Board(){
         this.squares[rank][4].emptySquare()
         this.squares[rank][0].emptySquare()
     }
-
 }
 
 class Square(var piece: Piece? = null, val positionX: Int, val positionY: Int){
@@ -375,5 +372,4 @@ class Square(var piece: Piece? = null, val positionX: Int, val positionY: Int){
     fun getY(): Int{
         return this.positionY
     }
-
 }

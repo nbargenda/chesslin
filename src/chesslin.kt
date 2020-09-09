@@ -80,7 +80,7 @@ fun main(){
                     if (!move.special.isNullOrEmpty()){
 
                         when {
-                            move.special.contains('c') -> {
+                            move.special.contains('x') -> {
                                 capturedPieces.add(move.squareTo.piece!!)
                                 testgame.executeMove(move)
                             }
@@ -103,7 +103,6 @@ fun main(){
                             move.special.contains('l') ->{
                                 testgame.board.castleLong(currentState.value[0])
                             }
-
                         }
                     }
 
@@ -114,7 +113,6 @@ fun main(){
                 }
 
                 catch (e: NullPointerException){
-                    print("oopsie")
                     println(e.stackTrace)
                 }
             }
