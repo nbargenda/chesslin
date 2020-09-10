@@ -50,11 +50,13 @@ class Game(){
     private val a0 = Input("move")
     private val a1 = Input("check")
     private val a2 = Input("checkmate")
+    private val a3 = Input ("draw")
     private val s0 = State ("white Turn")
     private val s1 = State ("black Turn")
     private val s2 = State ("white Check")
     private val s3 = State ("black Check")
     private val s4 = State ( "checkmate")
+    private val s5 = State ( "draw")
 
     val stateMachine = StateMachine(
         states = setOf(s0, s1, s2, s3, s4),
@@ -82,11 +84,18 @@ class Game(){
                     s3 -> s4
                     else -> state
                 }
+                a3 -> when (state) {
+                    s0 -> s5
+                    s1 -> s5
+                    s2 -> s5
+                    s3 -> s5
+                    else -> state
+                }
                 else -> state
             }
         },
         initialState = s0,
-        isFinalState = { state: State -> state == s4 }
+        isFinalState = { state: State -> state in listOf<State>(s4,s5) }
     )
 
     fun transition(dfa: StateMachine, input: MutableList<Input>): State {

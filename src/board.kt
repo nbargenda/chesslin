@@ -101,8 +101,7 @@ class Board(){
         if (square.getX() != kingSquare.getX() && square.getY() != kingSquare.getY() &&
             ((square.getX()-kingSquare.getX()).absoluteValue != (square.getY()-kingSquare.getY()).absoluteValue))
             return defaultSquare
-
-        otherMoves.forEach {
+        removeEmptyMoves(otherMoves).forEach {
             try{
                 if (it[0].getType()!! in "QBR"){
                     it.forEach{threatSquare->
@@ -111,6 +110,7 @@ class Board(){
                 }
             }
             catch(e: NullPointerException){
+                e.printStackTrace()
                 return defaultSquare
             }
         }
@@ -349,29 +349,34 @@ class Board(){
     private fun checkCastlingShort(square: Square): Boolean{
         val threatenedSquares:MutableSet<Set<Square>> = mutableSetOf()
         val pieces:MutableSet<Square>
-        if(square.getColor()=="w"){
-            pieces = getBlackPieces(getPieces())
-            pieces.forEach {
-                threatenedSquares.add(threatenedSquares(it))
-            }
-            if (!this.squares[0][7].getHasMoved()!! && !this.squares[0][5].hasPiece() && !this.squares[0][6].hasPiece()){
-                threatenedSquares.forEach {
-                    if (it.contains(this.squares[0][5]) || it.contains(this.squares[0][6]) || it.contains(this.squares[0][4])) return false
+        try{
+            if(square.getColor()=="w"){
+                pieces = getBlackPieces(getPieces())
+                pieces.forEach {
+                    threatenedSquares.add(threatenedSquares(it))
                 }
-                return true
+                if (!this.squares[0][7].getHasMoved()!! && !this.squares[0][5].hasPiece() && !this.squares[0][6].hasPiece()){
+                    threatenedSquares.forEach {
+                        if (it.contains(this.squares[0][5]) || it.contains(this.squares[0][6]) || it.contains(this.squares[0][4])) return false
+                    }
+                    return true
+                }
+            }
+            else {
+                pieces = getWhitePieces(getPieces())
+                pieces.forEach {
+                    threatenedSquares.add(threatenedSquares(it))
+                }
+                if (!this.squares[7][7].getHasMoved()!! && !this.squares[7][5].hasPiece() && !this.squares[7][6].hasPiece()){
+                    threatenedSquares.forEach {
+                        if (it.contains(this.squares[7][5]) || it.contains(this.squares[7][6]) || it.contains(this.squares[7][4])) return false
+                    }
+                    return true
+                }
             }
         }
-        else {
-            pieces = getWhitePieces(getPieces())
-            pieces.forEach {
-                threatenedSquares.add(threatenedSquares(it))
-            }
-            if (!this.squares[7][7].getHasMoved()!! && !this.squares[7][5].hasPiece() && !this.squares[7][6].hasPiece()){
-                threatenedSquares.forEach {
-                    if (it.contains(this.squares[7][5]) || it.contains(this.squares[7][6]) || it.contains(this.squares[7][4])) return false
-                }
-                return true
-            }
+        catch(e: NullPointerException){
+            return false
         }
         return false
     }
@@ -379,32 +384,37 @@ class Board(){
     private fun checkCastlingLong(square: Square): Boolean{
         val threatenedSquares:MutableSet<Set<Square>> = mutableSetOf()
         val pieces:MutableSet<Square>
-        if(square.getColor()=="w"){
-            pieces = getBlackPieces(getPieces())
-            pieces.forEach {
-                threatenedSquares.add(threatenedSquares(it))
-            }
-            if (!this.squares[0][0].getHasMoved()!! && !this.squares[0][3].hasPiece() && !this.squares[0][2].hasPiece() && !this.squares[0][1].hasPiece()){
-                threatenedSquares.forEach {
-                    if (it.contains(this.squares[0][4]) || it.contains(this.squares[0][3]) || it.contains(this.squares[0][2]) || it.contains(this.squares[0][1])) return false
+        try{
+            if(square.getColor()=="w"){
+                pieces = getBlackPieces(getPieces())
+                pieces.forEach {
+                    threatenedSquares.add(threatenedSquares(it))
                 }
-                return true
-            }
-        }
-        else {
-            pieces = getWhitePieces(getPieces())
-            pieces.forEach {
-                threatenedSquares.add(threatenedSquares(it))
-            }
-            if (!this.squares[7][0].getHasMoved()!! && !this.squares[7][3].hasPiece() && !this.squares[7][2].hasPiece() && !this.squares[7][1].hasPiece()){
-                threatenedSquares.forEach {
-                    if (it.contains(this.squares[7][4]) || it.contains(this.squares[7][3]) || it.contains(this.squares[7][2]) || it.contains(this.squares[7][1])) return false
+                if (!this.squares[0][0].getHasMoved()!! && !this.squares[0][3].hasPiece() && !this.squares[0][2].hasPiece() && !this.squares[0][1].hasPiece()){
+                    threatenedSquares.forEach {
+                        if (it.contains(this.squares[0][4]) || it.contains(this.squares[0][3]) || it.contains(this.squares[0][2]) || it.contains(this.squares[0][1])) return false
+                    }
+                    return true
                 }
-                return true
             }
+            else {
+                pieces = getWhitePieces(getPieces())
+                pieces.forEach {
+                    threatenedSquares.add(threatenedSquares(it))
+                }
+                if (!this.squares[7][0].getHasMoved()!! && !this.squares[7][3].hasPiece() && !this.squares[7][2].hasPiece() && !this.squares[7][1].hasPiece()){
+                    threatenedSquares.forEach {
+                        if (it.contains(this.squares[7][4]) || it.contains(this.squares[7][3]) || it.contains(this.squares[7][2]) || it.contains(this.squares[7][1])) return false
+                    }
+                    return true
+                }
 
+            }
+            return false
         }
-        return false
+        catch(e: NullPointerException){
+            return false
+        }
     }
     private fun checkEnPassanteLeft(square: Square, lastMove: Move): Boolean{
         return if (square.getColor()=="w"){
@@ -588,6 +598,55 @@ class Board(){
         this.squares[rank][3].piece!!.setHasMoved()
         this.squares[rank][4].emptySquare()
         this.squares[rank][0].emptySquare()
+    }
+
+    fun removeKingMovesCheck(moves: MutableSet<ArrayList<Square>>, otherPieces: MutableSet<Square>): MutableSet<ArrayList<Square>> {
+        val result = arrayListOf<Square>()
+        val threatenedSquares: MutableSet<Square> = mutableSetOf()
+        otherPieces.forEach {square->
+            threatenedSquares.addAll(threatenedSquares(square))
+        }
+        val nonEmptyThreatenedSquares: MutableSet<Square> = mutableSetOf()
+        threatenedSquares.forEach {
+            if (it.hasPiece()) nonEmptyThreatenedSquares.add(it)
+        }
+        threatenedSquares.removeAll(nonEmptyThreatenedSquares)
+
+        var kingMoves = arrayListOf<Square>()
+        moves.forEach {
+            if (it[0].getType() == 'K') kingMoves = it
+        }
+        kingMoves.forEach{
+            if (it in threatenedSquares && it.getType()!='K') result.add(it)
+            if (kingMoves[0].getColor() == "w"){
+                if(it.getX()<6){
+                    if((it.getY()<7 && this.squares[it.getX()+1][it.getY()+1].getType()=='P' && this.squares[it.getX()+1][it.getY()+1].getColor()=="b" )||
+                        (it.getY()>0 && this.squares[it.getX()+1][it.getY()-1].getType()=='P'&& this.squares[it.getX()+1][it.getY()-1].getColor()=="b" ))
+                        result.add(it)
+                }
+            }
+            else{
+                if(it.getX()>1){
+                    if((it.getY()<7 && this.squares[it.getX()-1][it.getY()+1].getType()=='P' && this.squares[it.getX()-1][it.getY()+1].getColor()=="w")||
+                        (it.getY()>0 && this.squares[it.getX()-1][it.getY()-1].getType()=='P' && this.squares[it.getX()-1][it.getY()-1].getColor()=="w"))
+                        result.add(it)
+                }
+            }
+        }
+
+        moves.remove(kingMoves)
+        kingMoves.removeAll(result)
+        moves.add(kingMoves)
+        return removeEmptyMoves(moves)
+    }
+
+    private fun removeEmptyMoves(moves: MutableSet<ArrayList<Square>>): MutableSet<ArrayList<Square>> {
+        val result:MutableSet<ArrayList<Square>> = mutableSetOf<ArrayList<Square>>()
+        moves.forEach {
+            if (it.size <= 1 || !it[0].hasPiece()) result.add(it)
+        }
+        moves.removeAll(result)
+        return moves
     }
 }
 

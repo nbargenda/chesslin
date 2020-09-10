@@ -58,7 +58,7 @@ fun main(){
         val currentState = testgame.transition(testgame.stateMachine, inputs)
         var possibleMoves:MutableSet<ArrayList<Square>> = mutableSetOf()
         var pieces = testgame.board.getPieces()
-        val currentPieces:MutableSet<Square>
+        var currentPieces:MutableSet<Square>
         var otherPieces:MutableSet<Square>
         var otherMoves:MutableSet<ArrayList<Square>> = mutableSetOf()
         if (currentState.value[0] == 'w') {
@@ -77,6 +77,7 @@ fun main(){
             if (testgame.board.hasMoves(it)) otherMoves.add(testgame.board.possibleMovesSquare(it))
         }
         possibleMoves = testgame.board.removePinnedMoves(possibleMoves, otherMoves)
+       // possibleMoves = testgame.board.removeKingMovesCheck(possibleMoves, otherMoves)
 
         if ("Check" in currentState.value) {
             possibleMoves = testgame.board.possibleMovesCheck(possibleMoves, otherMoves)
@@ -100,10 +101,11 @@ fun main(){
                         when {
                             move.special.contains('x') -> {
                                 capturedPieces.add(move.squareTo.piece!!)
-                                otherPieces.remove(move.squareTo)
+                                possibleMoves.remove(testgame.board.possibleMovesSquare(move.squareFrom))
                                 testgame.executeMove(move)
                             }
                             move.special.contains('e') -> {
+                                possibleMoves.remove(testgame.board.possibleMovesSquare(move.squareFrom))
                                 if (move.squareFrom.getColor()=="w"){
                                     testgame.board.squares[move.squareTo.getX()-1][move.squareTo.getY()].piece?.let {
                                         capturedPieces.add(it)
@@ -131,20 +133,35 @@ fun main(){
                     testgame.board.moveHistory.add(move)
                     pieces = testgame.board.getPieces()
                     otherMoves = mutableSetOf()
-                    otherPieces = if (currentState.value[0] == 'w') testgame.board.getBlackPieces(pieces)
-                                  else testgame.board.getWhitePieces(pieces)
-
+                    if (currentState.value[0] == 'w') {
+                        currentPieces = testgame.board.getWhitePieces(pieces)
+                        otherPieces   = testgame.board.getBlackPieces(pieces)
+                    }
+                    else{
+                        currentPieces = testgame.board.getBlackPieces(pieces)
+                        otherPieces   = testgame.board.getWhitePieces(pieces)
+                    }
                     possibleMoves.remove(testgame.board.possibleMovesSquare(move.squareFrom))
                     possibleMoves.add(testgame.board.possibleMovesSquare(move.squareTo))
-
                     otherPieces.forEach {
                         if (testgame.board.hasMoves(it)) otherMoves.add(testgame.board.possibleMovesSquare(it))
                     }
+                    otherMoves = testgame.board.removeKingMovesCheck(otherMoves, currentPieces)
+                    // remove arraylists (moves) with size = 1
+                    otherMoves = testgame.board.removePinnedMoves(otherMoves, possibleMoves)
+
                     if (checkIfCheck(possibleMoves, currentState.value[0])) {
                         otherMoves = testgame.board.possibleMovesCheck(otherMoves, possibleMoves)
                     }
+
                     when {
-                        otherMoves.isEmpty() -> inputs.add(Input("checkmate"))
+                        otherMoves.isEmpty() ->{
+                            when {
+                                checkIfCheck(possibleMoves, currentState.value[0]) -> inputs.add(Input("checkmate"))
+                                else -> inputs.add(Input("draw"))
+                            }
+                        }
+                        threeRep() || fiftyMove() -> inputs.add(Input("draw"))
                         checkIfCheck(possibleMoves, currentState.value[0]) -> inputs.add(Input("check"))
                         else -> inputs.add(Input("move"))
                     }
@@ -158,10 +175,20 @@ fun main(){
 
         else{
             print(testgame.board.toASCII())
-            println("CHECKMATE")
+            println("CHECKMATE/DRAW")
             break
         }
     }
+}
+
+// fifty move rule
+fun fiftyMove(): Boolean {
+    return false
+}
+
+// threefold repetition
+fun threeRep(): Boolean{
+    return false
 }
 
 
