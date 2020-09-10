@@ -1,10 +1,10 @@
 
-class Moves(){
+class Moves {
 
-    private val pawnMove = setOf<List<Int>>(listOf<Int>(1,0))
-    private val knightMove    = setOf<List<Int>>(listOf<Int>(1,2),  listOf(2,1),  listOf<Int>(-1,2),  listOf(-2,1),
-        listOf<Int>(1,-2), listOf(2,-1), listOf<Int>(-1,-2), listOf(-2,-1))
-    var rookMove      = mutableSetOf<List<Int>>()
+    private val pawnMove = setOf(listOf(1,0))
+    private val knightMove    = setOf(listOf(1,2),  listOf(2,1),  listOf(-1,2),  listOf(-2,1),
+        listOf(1,-2), listOf(2,-1), listOf(-1,-2), listOf(-2,-1))
+    private var rookMove      = mutableSetOf<List<Int>>()
 
     init{
         rookMove.addAll(rookMove())
@@ -23,7 +23,7 @@ class Moves(){
         queenMove.addAll(rookMove())
     }
 
-    private val kingMove = setOf<List<Int>>(listOf(1,0), listOf(0,1),   listOf(-1,0), listOf(0,-1),
+    private val kingMove = setOf(listOf(1,0), listOf(0,1),   listOf(-1,0), listOf(0,-1),
         listOf(1,1), listOf(-1,-1), listOf(-1,1), listOf(1,-1))
 
     /**
@@ -49,10 +49,10 @@ class Moves(){
 fun rookMove(): MutableSet<List<Int>>{
     val moves = mutableSetOf<List<Int>>()
     for (i in 1..7){
-        val x1 = listOf<Int>(i,0)
-        val x2 = listOf<Int>(-i,0)
-        val y1 = listOf<Int>(0,i)
-        val y2 = listOf<Int>(0,-i)
+        val x1 = listOf(i,0)
+        val x2 = listOf(-i,0)
+        val y1 = listOf(0,i)
+        val y2 = listOf(0,-i)
         moves.add(x1)
         moves.add(x2)
         moves.add(y1)
@@ -64,10 +64,10 @@ fun rookMove(): MutableSet<List<Int>>{
 fun bishopMove(): MutableSet<List<Int>>{
     val moves = mutableSetOf<List<Int>>()
     for (i in 1..7){
-        val xx = listOf<Int>(i,i)
-        val xy = listOf<Int>(i,-i)
-        val yx = listOf<Int>(-i,i)
-        val yy = listOf<Int>(-i,-i)
+        val xx = listOf(i,i)
+        val xy = listOf(i,-i)
+        val yx = listOf(-i,i)
+        val yy = listOf(-i,-i)
         moves.add(xx)
         moves.add(xy)
         moves.add(yx)
@@ -76,7 +76,4 @@ fun bishopMove(): MutableSet<List<Int>>{
     return moves
 }
 
-class Move(val squareFrom: Square, val squareTo: Square, val special: String? = null){
-
-
-}
+class Move(val squareFrom: Square, val squareTo: Square, val special: String? = null)

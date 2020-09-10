@@ -1,4 +1,3 @@
-import java.io.StringWriter
 import java.lang.NullPointerException
 
 fun bound(int: Int): Int{
@@ -78,7 +77,7 @@ fun main(){
             if (testgame.board.hasMoves(it)) otherMoves.add(testgame.board.possibleMovesSquare(it))
         }
         possibleMoves = testgame.board.removePinnedMoves(possibleMoves, otherMoves)
-       // possibleMoves = testgame.board.removeKingMovesCheck(possibleMoves, otherMoves)
+        possibleMoves = testgame.board.removeKingMovesCheck(possibleMoves, otherPieces)
 
         if ("Check" in currentState.value) {
             possibleMoves = testgame.board.possibleMovesCheck(possibleMoves, otherMoves)
@@ -100,6 +99,11 @@ fun main(){
                     if (!move.special.isNullOrEmpty()){
 
                         when {
+                            move.special.contains('p') ->{
+                                if (move.special.contains('x')) capturedPieces.add(move.squareTo.piece!!)
+                                possibleMoves.remove(testgame.board.possibleMovesSquare(move.squareFrom))
+                                testgame.executePromotion(move)
+                            }
                             move.special.contains('x') -> {
                                 capturedPieces.add(move.squareTo.piece!!)
                                 possibleMoves.remove(testgame.board.possibleMovesSquare(move.squareFrom))
@@ -127,10 +131,10 @@ fun main(){
                             }
                         }
                     }
-
                     else {
                         testgame.executeMove(move)
                     }
+
                     testgame.board.moveHistory.add(move)
                     pieces = testgame.board.getPieces()
                     otherMoves = mutableSetOf()

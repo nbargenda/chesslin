@@ -2,22 +2,21 @@ import java.lang.IndexOutOfBoundsException
 import java.lang.NullPointerException
 import kotlin.math.absoluteValue
 
-class Board(){
+class Board{
 
 
     var squares = arrayListOf<ArrayList<Square>>()
     val moveHistory = arrayListOf<Move>()
+    private val moves = Moves()
 
     init{
         for(i in 0..7){
-            squares.add(arrayListOf<Square>())
+            squares.add(arrayListOf())
             for (j in 0..7){
                 squares[i].add(Square(null,i,j))
             }
         }
     }
-
-    private val moves = Moves()
 
     fun hasMoves(square: Square): Boolean{
          return possibleMoves(square).isNotEmpty()
@@ -38,7 +37,7 @@ class Board(){
     }
 
     fun possibleMovesSquare(square: Square): ArrayList<Square>{
-        val result = arrayListOf<Square>(square)
+        val result = arrayListOf(square)
         result.addAll(possibleMoves(square))
         return result
     }
@@ -556,11 +555,10 @@ class Board(){
 
         for(i in 7 downTo 0){
             for(j in 0..7){
-                if (this.squares[i][j].hasPiece()){
-                    string += this.squares[i][j].getColor()+this.squares[i][j].piece!!.type
-                }
-                else {
-                    string += "_ "
+                string += if (this.squares[i][j].hasPiece()){
+                    this.squares[i][j].getColor()+this.squares[i][j].piece!!.type
+                } else {
+                    "_ "
                 }
             }
             if (i > 0) string += "\n"
@@ -571,7 +569,7 @@ class Board(){
     }
 
     fun basicMove(squareA: Square, squareB: Square){
-        this.moveHistory.add(Move(squareA,squareB))
+        this.moveHistory.add(Move(squareA, squareB))
         squareB.putPiece(squareA.piece!!)
         squareB.piece!!.setHasMoved()
         squareA.emptySquare()
@@ -640,12 +638,19 @@ class Board(){
     }
 
     fun removeEmptyMoves(moves: MutableSet<ArrayList<Square>>): MutableSet<ArrayList<Square>> {
-        val result:MutableSet<ArrayList<Square>> = mutableSetOf<ArrayList<Square>>()
+        val result = mutableSetOf<ArrayList<Square>>()
         moves.forEach {
             if (it.size <= 1 || !it[0].hasPiece()) result.add(it)
         }
         moves.removeAll(result)
         return moves
+    }
+
+    fun promotion(squareFrom: Square, squareTo: Square, type: Char) {
+        this.moveHistory.add(Move(squareFrom, squareTo))
+        squareFrom.piece!!.type = type
+        squareTo.putPiece(squareFrom.piece!!)
+        squareFrom.emptySquare()
     }
 }
 

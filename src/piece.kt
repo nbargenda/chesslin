@@ -1,5 +1,5 @@
 
-open class Piece(private val color: Boolean, val type: Char, var hasMoved: Boolean = false){
+open class Piece(private val color: Boolean, var type: Char, var hasMoved: Boolean = false){
 
 
     fun getColor(): String{

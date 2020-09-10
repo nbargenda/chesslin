@@ -2,7 +2,7 @@ val defaultSquare = Square(positionX = 42,positionY = 69)
 val defaultMove   = Move(defaultSquare, defaultSquare)
 
 
-class Game(){
+class Game {
     val board = Board()
 
     fun startingPosition(){
@@ -95,7 +95,7 @@ class Game(){
             }
         },
         initialState = s0,
-        isFinalState = { state: State -> state in listOf<State>(s4,s5) }
+        isFinalState = { state: State -> state in listOf(s4,s5) }
     )
 
     fun transition(dfa: StateMachine, input: MutableList<Input>): State {
@@ -107,17 +107,20 @@ class Game(){
     }
 
     private fun parsePawnMove(input: String, moves: MutableSet<ArrayList<Square>>): Move{
-        try{
+        return try{
             var moveFrom = defaultSquare
             val y = input[0].toInt()-97
             val x = input[1].toInt()-49
+            when (moves.first()[0].getColor()){
+                    "w" -> if (x == 7) return defaultMove
+                    "b" -> if (x == 0) return defaultMove
+            }
             moves.forEach {
                 if (it.contains(this.board.squares[x][y]) && it[0].getType()=='P') moveFrom = it[0]
             }
-            return Move(moveFrom, this.board.squares[x][y])
-        }
-        catch(e: StringIndexOutOfBoundsException){
-            return defaultMove
+            Move(moveFrom, this.board.squares[x][y])
+        } catch(e: StringIndexOutOfBoundsException){
+            defaultMove
         }
     }
 
@@ -207,6 +210,13 @@ class Game(){
                         }
                         bool = true
                     }
+                }
+            }
+
+            if(moveFrom.getType()=='P'){
+                when (moves.first()[0].getColor()){
+                    "w" -> if (x == 7) return defaultMove
+                    "b" -> if (x == 0) return defaultMove
                 }
             }
             return Move(moveFrom, this.board.squares[x][y], special)
@@ -312,6 +322,7 @@ class Game(){
         return if (input.isNotEmpty())
             when {
                 input[0] in 'a'..'h' && input[1] !='x'        -> parsePawnMove(input, moves)
+                input.contains('=')                           -> parsePromotion(input, moves)
                 input.contains('x')                           -> parseCapture(input, moves)
                 input[1] in 'a'..'h' && input[2] !in 'a'..'h' -> parsePieceMove(input, moves)
                 input.length==4                               -> parse4Move(input, moves)
@@ -322,8 +333,45 @@ class Game(){
         else defaultMove
     }
 
+    private fun parsePromotion(input: String, moves: MutableSet<java.util.ArrayList<Square>>): Move {
+
+        try{
+            if (input.last()=='=') return defaultMove
+            var moveFrom = defaultSquare
+            val special = when{
+                input.contains('x') -> "xp"+input.last()
+                else                -> "p"+input.last()
+            }
+            val y = when{
+                input.contains('x') -> input[2].toInt()-97
+                else                -> input[0].toInt()-97
+            }
+            val x= when{
+                input.contains('x') -> input[3].toInt()-49
+                else                -> input[1].toInt()-49
+            }
+            if (special.contains('x')){
+                moves.forEach {
+                    if (it.contains(this.board.squares[x][y]) && it[0].getType()=='P' && it[0].getY() == input[0].toInt()-97 ) moveFrom = it[0]
+                }
+            }
+            else{
+                moves.forEach {
+                    if (it.contains(this.board.squares[x][y]) && it[0].getType()=='P') moveFrom = it[0]
+                }
+            }
+            return Move(moveFrom, this.board.squares[x][y], special)
+        }
+        catch(e: StringIndexOutOfBoundsException){
+            return defaultMove
+        }
+    }
 
     fun executeMove(move: Move){
         this.board.basicMove(move.squareFrom, move.squareTo)
+    }
+
+    fun executePromotion(move: Move) {
+        this.board.promotion(move.squareFrom, move.squareTo, move.special!!.last())
     }
 }
