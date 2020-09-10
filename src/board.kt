@@ -51,33 +51,33 @@ class Board(){
         return defaultSquare
     }
 
-// ASCII square
+/*         |    |
+*     lu   | us |   ru
+*  ________|____|________
+*     ls   | K  |   rs
+*  ________|____|________
+*          |    |
+*     ld   | ds |  rd
+*          |    |
+*
+ */
     private fun wouldPinItself(square: Square, squareThatChecks: Square): Boolean{
         val kingSquare = findKing(square.getColor())
         val threatenedSquares = threatenedSquaresRBQ(squareThatChecks)
-        // squarethatchecks is ALWAYS Q,B,R
-        // remove squares from threatenedsquares so that it only has teh squares between squarethatchecks and kingsquare
-        var where = "" // from king
-        when {
-            kingSquare.getX() > squareThatChecks.getX() -> {
-                where = when {
-                    kingSquare.getY() > squareThatChecks.getY() ->  "ld"
-                    kingSquare.getY() < squareThatChecks.getY() ->  "rd"
-                    else ->  "ds"
-                }
-            }
-            kingSquare.getX() < squareThatChecks.getX() -> {
-                where = when {
-                    kingSquare.getY() > squareThatChecks.getY() -> "lu"
-                    kingSquare.getY() < squareThatChecks.getY() -> "ru"
-                    else -> "us"
-                }
-            }
-            else -> {
-                where = if (kingSquare.getY() < squareThatChecks.getY()) "rs"
-                        else "ls"
-            }
+    val where: String = when {
+        kingSquare.getX() > squareThatChecks.getX() -> when {
+            kingSquare.getY() > squareThatChecks.getY() -> "ld"
+            kingSquare.getY() < squareThatChecks.getY() -> "rd"
+            else -> "ds"
         }
+        kingSquare.getX() < squareThatChecks.getX() -> when {
+            kingSquare.getY() > squareThatChecks.getY() -> "lu"
+            kingSquare.getY() < squareThatChecks.getY() -> "ru"
+            else -> "us"
+        }
+        else -> if (kingSquare.getY() < squareThatChecks.getY()) "rs"
+        else "ls"
+    }
 
         threatenedSquares.forEach {
             when (where){
@@ -253,7 +253,7 @@ class Board(){
                 when (it[0].getType()) {
                     'K' -> if (!threatenedSquares.contains(it[1])) result.add(it)
                     else -> {
-                        if(isPinned(it[0], otherMoves).hasPiece()){
+                        if(!isPinned(it[0], otherMoves).hasPiece()){
                             checkSquares.forEach { checkSquare->
                                 when (checkSquare.getType()){
                                     'P','N' -> {
@@ -310,7 +310,6 @@ class Board(){
         threatenedSquares.forEach {
                 if (it.getColor()!=square.getColor()) result.add(it)
             }
-
         return result
     }
 
@@ -620,8 +619,8 @@ class Board(){
             if (it in threatenedSquares && it.getType()!='K') result.add(it)
             if (kingMoves[0].getColor() == "w"){
                 if(it.getX()<6){
-                    if((it.getY()<7 && this.squares[it.getX()+1][it.getY()+1].getType()=='P' && this.squares[it.getX()+1][it.getY()+1].getColor()=="b" )||
-                        (it.getY()>0 && this.squares[it.getX()+1][it.getY()-1].getType()=='P'&& this.squares[it.getX()+1][it.getY()-1].getColor()=="b" ))
+                    if((it.getY()<7 && this.squares[it.getX()+1][it.getY()+1].getType()=='P' && this.squares[it.getX()+1][it.getY()+1].getColor()=="b")||
+                        (it.getY()>0 && this.squares[it.getX()+1][it.getY()-1].getType()=='P'&& this.squares[it.getX()+1][it.getY()-1].getColor()=="b"))
                         result.add(it)
                 }
             }
@@ -640,7 +639,7 @@ class Board(){
         return removeEmptyMoves(moves)
     }
 
-    private fun removeEmptyMoves(moves: MutableSet<ArrayList<Square>>): MutableSet<ArrayList<Square>> {
+    fun removeEmptyMoves(moves: MutableSet<ArrayList<Square>>): MutableSet<ArrayList<Square>> {
         val result:MutableSet<ArrayList<Square>> = mutableSetOf<ArrayList<Square>>()
         moves.forEach {
             if (it.size <= 1 || !it[0].hasPiece()) result.add(it)

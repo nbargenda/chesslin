@@ -42,7 +42,8 @@ fun charToColor(char: Char): Boolean{
 }
 
 fun isValidMove(move: Move): Boolean{
-    return move.squareFrom.getX() in 0..7 && move.squareFrom.getY() in 0..7 && move.squareTo.getX() in 0..7 && move.squareTo.getY() in 0..7
+    return move.squareFrom.getX() in 0..7 && move.squareFrom.getY() in 0..7 &&
+            move.squareTo.getX() in 0..7 && move.squareTo.getY() in 0..7  && move.squareTo != move.squareFrom
 }
 
 fun main(){
@@ -56,7 +57,7 @@ fun main(){
     while(true) {
 
         val currentState = testgame.transition(testgame.stateMachine, inputs)
-        var possibleMoves:MutableSet<ArrayList<Square>> = mutableSetOf()
+        var possibleMoves = mutableSetOf<ArrayList<Square>>()
         var pieces = testgame.board.getPieces()
         var currentPieces:MutableSet<Square>
         var otherPieces:MutableSet<Square>
@@ -147,11 +148,10 @@ fun main(){
                         if (testgame.board.hasMoves(it)) otherMoves.add(testgame.board.possibleMovesSquare(it))
                     }
                     otherMoves = testgame.board.removeKingMovesCheck(otherMoves, currentPieces)
-                    // remove arraylists (moves) with size = 1
                     otherMoves = testgame.board.removePinnedMoves(otherMoves, possibleMoves)
 
                     if (checkIfCheck(possibleMoves, currentState.value[0])) {
-                        otherMoves = testgame.board.possibleMovesCheck(otherMoves, possibleMoves)
+                        otherMoves = testgame.board.possibleMovesCheck(otherMoves, testgame.board.removeEmptyMoves(possibleMoves))
                     }
 
                     when {
