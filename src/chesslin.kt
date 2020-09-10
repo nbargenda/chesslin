@@ -1,17 +1,8 @@
 import java.lang.NullPointerException
 
-fun bound(int: Int): Int{
-    return when (int){
-        in 8..16 -> 7
-        in -1 downTo -9 -> 0
-        else -> int
-    }
-}
-
-
 fun mapToASCII(string: String): String{
     var result = String()
-    val pieceMap = mapOf<String, Char>("bP" to '♟', "wP" to '♙', "bR" to '♜', "wR" to '♖', "bB" to '♝', "wB" to '♗',
+    val pieceMap = mapOf("bP" to '♟', "wP" to '♙', "bR" to '♜', "wR" to '♖', "bB" to '♝', "wB" to '♗',
                                                         "bN" to '♞', "wN" to '♘', "bQ" to '♛', "wQ" to '♕', "bK" to '♚', "wK" to '♔')
     val lines = string.lines()
     lines.forEach{
@@ -25,19 +16,9 @@ fun mapToASCII(string: String): String{
             }
         }
             result += "\n"
-
     }
 
     return result
-}
-
-
-fun charToColor(char: Char): Boolean{
-    return when (char){
-            'w' -> true
-            'b' -> false
-        else -> true
-    }
 }
 
 fun isValidMove(move: Move): Boolean{

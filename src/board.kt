@@ -571,7 +571,7 @@ class Board{
     fun basicMove(squareA: Square, squareB: Square){
         this.moveHistory.add(Move(squareA, squareB))
         squareB.putPiece(squareA.piece!!)
-        squareB.piece!!.setHasMoved()
+        squareB.piece!!.hasMoved = true
         squareA.emptySquare()
     }
 
@@ -580,8 +580,8 @@ class Board{
         if (color == 'b') rank = 7
         this.squares[rank][6].putPiece(this.squares[rank][4].piece!!)
         this.squares[rank][5].putPiece(this.squares[rank][7].piece!!)
-        this.squares[rank][6].piece!!.setHasMoved()
-        this.squares[rank][5].piece!!.setHasMoved()
+        this.squares[rank][6].piece!!.hasMoved = true
+        this.squares[rank][5].piece!!.hasMoved = true
         this.squares[rank][4].emptySquare()
         this.squares[rank][7].emptySquare()
     }
@@ -591,8 +591,8 @@ class Board{
         if (color == 'b') rank = 7
         this.squares[rank][2].putPiece(this.squares[rank][4].piece!!)
         this.squares[rank][3].putPiece(this.squares[rank][0].piece!!)
-        this.squares[rank][2].piece!!.setHasMoved()
-        this.squares[rank][3].piece!!.setHasMoved()
+        this.squares[rank][2].piece!!.hasMoved = true
+        this.squares[rank][3].piece!!.hasMoved = true
         this.squares[rank][4].emptySquare()
         this.squares[rank][0].emptySquare()
     }
