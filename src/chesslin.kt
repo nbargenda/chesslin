@@ -76,8 +76,8 @@ fun main() {
             val move: Move = testgame.parseMove(input ?: "", possibleMoves)
 
             if (isValidMove(move)) {
-                history.turnHistory.add(Turn(turn, currentState.value[0], testgame.board.squares, possibleMoves, move))
-
+                history.turnHistory.add(Turn(turn, currentState.value[0], testgame.board.squares, possibleMoves, move, input?:""))
+                turn++
                 try {
                     if (!move.special.isNullOrEmpty()) {
 
@@ -135,7 +135,7 @@ fun main() {
                     otherMoves = testgame.board.removeKingMovesCheck(otherMoves, currentPieces)
                     otherMoves = testgame.board.removePinnedMoves(otherMoves, possibleMoves)
 
-                    if (checkIfCheck(possibleMoves, currentState.value[0])) {
+                    if (checkIfCheck(possibleMoves, currentState.value[0].toString())) {
                         otherMoves = testgame.board.possibleMovesCheck(
                             otherMoves,
                             testgame.board.removeEmptyMoves(possibleMoves)
@@ -145,12 +145,12 @@ fun main() {
                     when {
                         otherMoves.isEmpty() -> {
                             when {
-                                checkIfCheck(possibleMoves, currentState.value[0]) -> inputs.add(Input("checkmate"))
+                                checkIfCheck(possibleMoves, currentState.value[0].toString()) -> inputs.add(Input("checkmate"))
                                 else -> inputs.add(Input("draw"))
                             }
                         }
                         threeRep() || fiftyMove() -> inputs.add(Input("draw"))
-                        checkIfCheck(possibleMoves, currentState.value[0]) -> inputs.add(Input("check"))
+                        checkIfCheck(possibleMoves, currentState.value[0].toString()) -> inputs.add(Input("check"))
                         else -> inputs.add(Input("move"))
                     }
                 } catch (e: NullPointerException) {
@@ -159,8 +159,12 @@ fun main() {
             }
         } else {
             print(testgame.board.toASCII())
-            println("CHECKMATE/DRAW")
             print(history.toString())
+            if(inputs.last().value=="checkmate"){
+                if(history.turnHistory.last().player == 'w') println("1-0")
+                else println("0-1")
+            }
+            else println("1/2-1/2")
             break
         }
     }
@@ -178,11 +182,11 @@ fun threeRep(): Boolean{
 }
 
 
-fun checkIfCheck(moves: MutableSet<ArrayList<Square>>, color: Char): Boolean{
+fun checkIfCheck(moves: MutableSet<ArrayList<Square>>, color: String): Boolean{
 
     moves.forEach { move ->
         move.forEach{ square ->
-            if (color=='w'){
+            if (color=="w"){
                 if (square.getColor()=="b" && square.getType()=='K') return true
             }
             else{

@@ -556,7 +556,7 @@ class Board{
         for(i in 7 downTo 0){
             for(j in 0..7){
                 string += if (this.squares[i][j].hasPiece()){
-                    this.squares[i][j].getColor()+this.squares[i][j].piece!!.type
+                    this.squares[i][j].getColor()+this.squares[i][j].getType()
                 } else {
                     "_ "
                 }
@@ -570,7 +570,7 @@ class Board{
 
     fun basicMove(squareA: Square, squareB: Square){
         this.moveHistory.add(Move(squareA, squareB))
-        squareB.putPiece(squareA.piece!!)
+        squareB.piece = squareA.piece
         squareB.piece!!.hasMoved = true
         squareA.emptySquare()
     }
@@ -578,8 +578,8 @@ class Board{
     fun castleShort(color: Char){
         var rank = 0
         if (color == 'b') rank = 7
-        this.squares[rank][6].putPiece(this.squares[rank][4].piece!!)
-        this.squares[rank][5].putPiece(this.squares[rank][7].piece!!)
+        this.squares[rank][6].piece = this.squares[rank][4].piece
+        this.squares[rank][5].piece = this.squares[rank][7].piece
         this.squares[rank][6].piece!!.hasMoved = true
         this.squares[rank][5].piece!!.hasMoved = true
         this.squares[rank][4].emptySquare()
@@ -589,8 +589,8 @@ class Board{
     fun castleLong(color: Char){
         var rank = 0
         if (color == 'b') rank = 7
-        this.squares[rank][2].putPiece(this.squares[rank][4].piece!!)
-        this.squares[rank][3].putPiece(this.squares[rank][0].piece!!)
+        this.squares[rank][2].piece = this.squares[rank][4].piece
+        this.squares[rank][3].piece = this.squares[rank][0].piece
         this.squares[rank][2].piece!!.hasMoved = true
         this.squares[rank][3].piece!!.hasMoved = true
         this.squares[rank][4].emptySquare()
@@ -649,7 +649,7 @@ class Board{
     fun promotion(squareFrom: Square, squareTo: Square, type: Char) {
         this.moveHistory.add(Move(squareFrom, squareTo))
         squareFrom.piece!!.type = type
-        squareTo.putPiece(squareFrom.piece!!)
+        squareTo.piece = squareFrom.piece
         squareFrom.emptySquare()
     }
 }
@@ -660,13 +660,10 @@ class Square(var piece: Piece? = null, val positionX: Int, val positionY: Int){
         return this.piece != null
     }
 
-    fun putPiece(piece: Piece){
-        this.piece = piece
-    }
-
     fun getColor(): String?{
         return this.piece?.getColor()
     }
+
     fun getType(): Char?{
         return this.piece?.type
     }

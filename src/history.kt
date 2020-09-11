@@ -1,4 +1,4 @@
-class Turn(val turn: Int, player: Char, squares: ArrayList<ArrayList<Square>>, moves: MutableSet<ArrayList<Square>>, val move: Move)
+class Turn(val turn: Int, val player: Char, squares: ArrayList<ArrayList<Square>>, moves: MutableSet<ArrayList<Square>>, val move: Move, val input: String)
 
 class History(val turnHistory: ArrayList<Turn>){
 
@@ -10,7 +10,7 @@ class History(val turnHistory: ArrayList<Turn>){
             if(it.turn % 2 !=0){ i++
                 result += "$i. "
             }
-            result += it.move.toString()+" "
+            result += it.input+" "
         }
         return result
     }
