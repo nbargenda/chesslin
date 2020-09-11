@@ -11,7 +11,6 @@ class Game {
             val pawnB = Piece(false, 'P')
             this.board.squares[1][i].putPiece(pawnW)
             this.board.squares[6][i].putPiece(pawnB)
-
         }
 
         for (i in 0..1){

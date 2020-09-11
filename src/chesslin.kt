@@ -26,29 +26,30 @@ fun isValidMove(move: Move): Boolean{
             move.squareTo.getX() in 0..7 && move.squareTo.getY() in 0..7  && move.squareTo != move.squareFrom
 }
 
-fun main(){
+fun main() {
 
     val testgame = Game()
     testgame.startingPosition()
     val inputs = mutableListOf<Input>()
     var input: String?
     val capturedPieces: MutableSet<Piece> = mutableSetOf()
+    var turn = 1
+    val history = History(arrayListOf())
 
-    while(true) {
+    while (true) {
 
         val currentState = testgame.transition(testgame.stateMachine, inputs)
         var possibleMoves = mutableSetOf<ArrayList<Square>>()
         var pieces = testgame.board.getPieces()
-        var currentPieces:MutableSet<Square>
-        var otherPieces:MutableSet<Square>
-        var otherMoves:MutableSet<ArrayList<Square>> = mutableSetOf()
+        var currentPieces: MutableSet<Square>
+        var otherPieces: MutableSet<Square>
+        var otherMoves: MutableSet<ArrayList<Square>> = mutableSetOf()
         if (currentState.value[0] == 'w') {
             currentPieces = testgame.board.getWhitePieces(pieces)
-            otherPieces   = testgame.board.getBlackPieces(pieces)
-        }
-        else{
+            otherPieces = testgame.board.getBlackPieces(pieces)
+        } else {
             currentPieces = testgame.board.getBlackPieces(pieces)
-            otherPieces   = testgame.board.getWhitePieces(pieces)
+            otherPieces = testgame.board.getWhitePieces(pieces)
         }
 
         currentPieces.forEach {
@@ -72,15 +73,16 @@ fun main(){
             println("Please input Move")
 
             input = readLine()
-            val move: Move = testgame.parseMove(input?:"", possibleMoves)
+            val move: Move = testgame.parseMove(input ?: "", possibleMoves)
 
-            if (isValidMove(move)){
+            if (isValidMove(move)) {
+                history.turnHistory.add(Turn(turn, currentState.value[0], testgame.board.squares, possibleMoves, move))
 
-                try{
-                    if (!move.special.isNullOrEmpty()){
+                try {
+                    if (!move.special.isNullOrEmpty()) {
 
                         when {
-                            move.special.contains('p') ->{
+                            move.special.contains('p') -> {
                                 if (move.special.contains('x')) capturedPieces.add(move.squareTo.piece!!)
                                 possibleMoves.remove(testgame.board.possibleMovesSquare(move.squareFrom))
                                 testgame.executePromotion(move)
@@ -92,27 +94,26 @@ fun main(){
                             }
                             move.special.contains('e') -> {
                                 possibleMoves.remove(testgame.board.possibleMovesSquare(move.squareFrom))
-                                if (move.squareFrom.getColor()=="w"){
-                                    testgame.board.squares[move.squareTo.getX()-1][move.squareTo.getY()].piece?.let {
+                                if (move.squareFrom.getColor() == "w") {
+                                    testgame.board.squares[move.squareTo.getX() - 1][move.squareTo.getY()].piece?.let {
                                         capturedPieces.add(it)
                                     }
                                     testgame.enPassantWhite(move)
-                                } else{
-                                    testgame.board.squares[move.squareTo.getX()+1][move.squareTo.getY()].piece?.let {
+                                } else {
+                                    testgame.board.squares[move.squareTo.getX() + 1][move.squareTo.getY()].piece?.let {
                                         capturedPieces.add(it)
                                     }
                                     testgame.enPassantBlack(move)
                                 }
                             }
-                            move.special.contains('s') ->{
+                            move.special.contains('s') -> {
                                 testgame.board.castleShort(currentState.value[0])
                             }
-                            move.special.contains('l') ->{
+                            move.special.contains('l') -> {
                                 testgame.board.castleLong(currentState.value[0])
                             }
                         }
-                    }
-                    else {
+                    } else {
                         testgame.executeMove(move)
                     }
 
@@ -121,11 +122,10 @@ fun main(){
                     otherMoves = mutableSetOf()
                     if (currentState.value[0] == 'w') {
                         currentPieces = testgame.board.getWhitePieces(pieces)
-                        otherPieces   = testgame.board.getBlackPieces(pieces)
-                    }
-                    else{
+                        otherPieces = testgame.board.getBlackPieces(pieces)
+                    } else {
                         currentPieces = testgame.board.getBlackPieces(pieces)
-                        otherPieces   = testgame.board.getWhitePieces(pieces)
+                        otherPieces = testgame.board.getWhitePieces(pieces)
                     }
                     possibleMoves.remove(testgame.board.possibleMovesSquare(move.squareFrom))
                     possibleMoves.add(testgame.board.possibleMovesSquare(move.squareTo))
@@ -136,11 +136,14 @@ fun main(){
                     otherMoves = testgame.board.removePinnedMoves(otherMoves, possibleMoves)
 
                     if (checkIfCheck(possibleMoves, currentState.value[0])) {
-                        otherMoves = testgame.board.possibleMovesCheck(otherMoves, testgame.board.removeEmptyMoves(possibleMoves))
+                        otherMoves = testgame.board.possibleMovesCheck(
+                            otherMoves,
+                            testgame.board.removeEmptyMoves(possibleMoves)
+                        )
                     }
 
                     when {
-                        otherMoves.isEmpty() ->{
+                        otherMoves.isEmpty() -> {
                             when {
                                 checkIfCheck(possibleMoves, currentState.value[0]) -> inputs.add(Input("checkmate"))
                                 else -> inputs.add(Input("draw"))
@@ -150,21 +153,19 @@ fun main(){
                         checkIfCheck(possibleMoves, currentState.value[0]) -> inputs.add(Input("check"))
                         else -> inputs.add(Input("move"))
                     }
-                }
-
-                catch (e: NullPointerException){
+                } catch (e: NullPointerException) {
                     e.printStackTrace()
                 }
             }
-        }
-
-        else{
+        } else {
             print(testgame.board.toASCII())
             println("CHECKMATE/DRAW")
+            print(history.toString())
             break
         }
     }
 }
+
 
 // fifty move rule
 fun fiftyMove(): Boolean {
