@@ -320,14 +320,14 @@ class Game {
 
         return if (input.isNotEmpty())
             when {
-                input[0] in 'a'..'h' && input[1] !='x'        -> parsePawnMove(input, moves)
-                input.contains('=')                           -> parsePromotion(input, moves)
-                input.contains('x')                           -> parseCapture(input, moves)
-                input[1] in 'a'..'h' && input[2] !in 'a'..'h' -> parsePieceMove(input, moves)
-                input.length==4                               -> parse4Move(input, moves)
-                input == "O-O"                                -> parseCastlingShort(moves)
-                input == "O-O-O"                              -> parseCastlingLong(moves)
-                else                                          -> parse5Move(input, moves)
+                input[0] in 'a'..'h' && input[1] !='x' && input != "draw"       -> parsePawnMove(input, moves)
+                input.contains('=')                                             -> parsePromotion(input, moves)
+                input.contains('x')                                             -> parseCapture(input, moves)
+                input[1] in 'a'..'h' && input[2] !in 'a'..'h'                   -> parsePieceMove(input, moves)
+                input.length==4      && input != "draw"                         -> parse4Move(input, moves)
+                input == "O-O"                                                  -> parseCastlingShort(moves)
+                input == "O-O-O"                                                -> parseCastlingLong(moves)
+                else                                                            -> parse5Move(input, moves)
             }
         else defaultMove
     }

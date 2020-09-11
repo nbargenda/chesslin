@@ -13,9 +13,6 @@ class Turn(val turn: Int, val player: Char, currentSquares: ArrayList<ArrayList<
     }
 
     val squares = arrayListOf<ArrayList<ArrayList<Char?>>>()
-    // getX -> char
-    // getY -> char
-    // type = char
     init {
         val tempSquares = arrayListOf<ArrayList<Char?>>()
         currentSquares.forEach {
@@ -25,9 +22,7 @@ class Turn(val turn: Int, val player: Char, currentSquares: ArrayList<ArrayList<
             squares.add(tempSquares)
         }
     }
-
     val string = input
-
 
 }
 

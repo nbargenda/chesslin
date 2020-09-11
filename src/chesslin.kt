@@ -74,13 +74,12 @@ fun main() {
 
             input = readLine()
             val move: Move = testgame.parseMove(input ?: "", possibleMoves)
+            history.turnHistory.add(Turn(turn, currentState.value[0], testgame.board.squares, possibleMoves, Move(move.squareFrom,move.squareTo,move.special), input?:""))
 
             if (isValidMove(move)) {
-                history.turnHistory.add(Turn(turn, currentState.value[0], testgame.board.squares, possibleMoves, Move(move.squareFrom,move.squareTo,move.special), input?:""))
                 turn++
                 try {
                     if (!move.special.isNullOrEmpty()) {
-
                         when {
                             move.special.contains('p') -> {
                                 if (move.special.contains('x')) capturedPieces.add(move.squareTo.piece!!)
@@ -148,7 +147,7 @@ fun main() {
                                 else -> inputs.add(Input("draw"))
                             }
                         }
-                        checkRepetition(history, 3) || checkFiftyMoves(history, 50) -> inputs.add(Input("draw")) // remove last turn from history tbh 
+                        checkRepetition(history, 5) || checkFiftyMoves(history, 75) -> inputs.add(Input("draw")) // remove last turn from history tbh
                         checkIfCheck(possibleMoves, currentState.value[0].toString()) -> inputs.add(Input("check"))
                         else -> inputs.add(Input("move"))
                     }
@@ -156,6 +155,12 @@ fun main() {
                     e.printStackTrace()
                 }
             }
+            else{
+                if(input=="draw"){
+                    if(checkFiftyMoves(history, 50) || checkRepetition(history, 3))  inputs.add(Input("draw"))
+                }
+            }
+
         } else {
             print(testgame.board.toASCII())
             print(history.toString())
