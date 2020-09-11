@@ -76,7 +76,7 @@ fun main() {
             val move: Move = testgame.parseMove(input ?: "", possibleMoves)
 
             if (isValidMove(move)) {
-                history.turnHistory.add(Turn(turn, currentState.value[0], testgame.board.squares, possibleMoves, move, input?:""))
+                history.turnHistory.add(Turn(turn, currentState.value[0], testgame.board.squares, possibleMoves, Move(move.squareFrom,move.squareTo,move.special), input?:""))
                 turn++
                 try {
                     if (!move.special.isNullOrEmpty()) {
@@ -117,7 +117,6 @@ fun main() {
                         testgame.executeMove(move)
                     }
 
-                    testgame.board.moveHistory.add(move)
                     pieces = testgame.board.getPieces()
                     otherMoves = mutableSetOf()
                     if (currentState.value[0] == 'w') {
@@ -149,7 +148,7 @@ fun main() {
                                 else -> inputs.add(Input("draw"))
                             }
                         }
-                        threeRep() || fiftyMove() -> inputs.add(Input("draw"))
+                        checkRepetition(history, 3) || checkFiftyMoves(history, 50) -> inputs.add(Input("draw")) // remove last turn from history tbh 
                         checkIfCheck(possibleMoves, currentState.value[0].toString()) -> inputs.add(Input("check"))
                         else -> inputs.add(Input("move"))
                     }
@@ -172,12 +171,42 @@ fun main() {
 
 
 // fifty move rule
-fun fiftyMove(): Boolean {
-    return false
+fun checkFiftyMoves(history: History, limit: Int): Boolean {
+    if (history.turnHistory.size <limit) return false
+    history.turnHistory.takeLast(limit).forEach {
+        if(it.squares[it.move.squareFrom.getX()][it.move.squareFrom.getY()][2] != 'P' || it.move.special?.contains('x') == true) return false
+    }
+    return true
 }
 
 // threefold repetition
-fun threeRep(): Boolean{
+fun checkRepetition(history: History, limit: Int): Boolean{
+
+    val whiteTurns = mutableSetOf<Turn>()
+    val blackTurns = mutableSetOf<Turn>()
+    history.turnHistory.forEach {
+        if (it.player=='w') whiteTurns.add(it)
+        else                blackTurns.add(it)
+    }
+    var count = 0
+    whiteTurns.forEach {turn1->
+        whiteTurns.forEach { turn2->
+            if(turn1.moves == turn2.moves) {
+                count++
+                if (count>=limit) return true
+            }
+        }
+        count = 0
+    }
+    blackTurns.forEach {turn1->
+        blackTurns.forEach { turn2->
+            if(turn1.moves == turn2.moves) {
+                count++
+                if (count>=limit) return true
+            }
+        }
+        count = 0
+    }
     return false
 }
 
