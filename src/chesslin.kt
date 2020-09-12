@@ -18,6 +18,7 @@ fun main() {
         var currentPieces: MutableSet<Square>
         var otherPieces: MutableSet<Square>
         var otherMoves: MutableSet<ArrayList<Square>> = mutableSetOf()
+
         if (currentState.value[0] == 'w') {
             currentPieces = testgame.board.getWhitePieces(pieces)
             otherPieces = testgame.board.getBlackPieces(pieces)
@@ -30,10 +31,6 @@ fun main() {
             val tempMoves = testgame.board.possibleMovesSquare(it)
             if (tempMoves.isNotEmpty()) possibleMoves.add(tempMoves)
         }
-        otherPieces.forEach {
-            val tempMoves = testgame.board.possibleMovesSquare(it)
-            if (tempMoves.isNotEmpty()) otherMoves.add(tempMoves)
-        }
 
         possibleMoves = testgame.board.removePinnedMoves(possibleMoves, otherMoves)
         possibleMoves = testgame.board.removeKingMovesCheck(possibleMoves, otherPieces)
@@ -41,6 +38,13 @@ fun main() {
         if ("Check" in currentState.value) {
             possibleMoves = testgame.board.possibleMovesCheck(possibleMoves, otherMoves)
         }
+
+        otherPieces.forEach {
+            val tempMoves = testgame.board.possibleMovesSquare(it)
+            if (tempMoves.isNotEmpty()) otherMoves.add(tempMoves)
+        }
+
+
 
         if (!testgame.stateMachine.isFinalState(currentState)) {
 
@@ -51,7 +55,16 @@ fun main() {
 
             input = readLine()
             val move: Move = testgame.parseMove(input ?: "", possibleMoves)
-            history.turnHistory.add(Turn(turn, currentState.value[0], testgame.board.squares, possibleMoves, Move(move.squareFrom,move.squareTo,move.special), input?:""))
+            history.turnHistory.add(
+                Turn(
+                    turn,
+                    currentState.value[0],
+                    testgame.board.squares,
+                    possibleMoves,
+                    Move(move.squareFrom, move.squareTo, move.special),
+                    input ?: ""
+                )
+            )
 
             if (isValidMove(move)) {
                 turn++
@@ -71,12 +84,12 @@ fun main() {
                             move.special.contains('e') -> {
                                 possibleMoves.remove(testgame.board.possibleMovesSquare(move.squareFrom))
                                 if (move.squareFrom.getColor() == "w") {
-                                    testgame.board.squares[move.squareTo.getX() - 1][move.squareTo.getY()].piece?.let {
+                                    testgame.board.squares[move.squareTo.col - 1][move.squareTo.rank].piece?.let {
                                         capturedPieces.add(it)
                                     }
                                     testgame.executeEnPassantWhite(move)
                                 } else {
-                                    testgame.board.squares[move.squareTo.getX() + 1][move.squareTo.getY()].piece?.let {
+                                    testgame.board.squares[move.squareTo.col + 1][move.squareTo.rank].piece?.let {
                                         capturedPieces.add(it)
                                     }
                                     testgame.executeEnPassantBlack(move)
@@ -95,6 +108,7 @@ fun main() {
 
                     pieces = testgame.board.getPieces()
                     otherMoves = mutableSetOf()
+
                     if (currentState.value[0] == 'w') {
                         currentPieces = testgame.board.getWhitePieces(pieces)
                         otherPieces = testgame.board.getBlackPieces(pieces)
@@ -102,8 +116,10 @@ fun main() {
                         currentPieces = testgame.board.getBlackPieces(pieces)
                         otherPieces = testgame.board.getWhitePieces(pieces)
                     }
+
                     possibleMoves.remove(testgame.board.possibleMovesSquare(move.squareFrom))
                     possibleMoves.add(testgame.board.possibleMovesSquare(move.squareTo))
+
                     otherPieces.forEach {
                         val tempMoves = testgame.board.possibleMovesSquare(it)
                         if (tempMoves.isNotEmpty()) otherMoves.add(tempMoves)
@@ -121,71 +137,74 @@ fun main() {
                     when {
                         otherMoves.isEmpty() -> {
                             when {
-                                checkIfCheck(possibleMoves, currentState.value[0].toString()) -> inputs.add(Input("checkmate"))
+                                checkIfCheck(
+                                    possibleMoves,
+                                    currentState.value[0].toString()
+                                ) -> inputs.add(Input("checkmate"))
                                 else -> inputs.add(Input("draw"))
                             }
                         }
-                        checkRepetition(history, 5) || checkFiftyMoves(history, 75) -> inputs.add(Input("draw")) // remove last turn from history tbh
+                        checkRepetition(history, 5) || checkFiftyMoves(
+                            history,
+                            75
+                        ) -> inputs.add(Input("draw")) // remove last turn from history tbh
                         checkIfCheck(possibleMoves, currentState.value[0].toString()) -> inputs.add(Input("check"))
                         else -> inputs.add(Input("move"))
                     }
                 } catch (e: NullPointerException) {
                     e.printStackTrace()
                 }
-            }
-            else{
-                if(input=="draw"){
-                    if(checkFiftyMoves(history, 50) || checkRepetition(history, 3))  inputs.add(Input("draw"))
+            } else {
+                if (input == "draw") {
+                    if (checkFiftyMoves(history, 50) || checkRepetition(history, 3)) inputs.add(Input("draw"))
                 }
             }
 
         } else {
             print(testgame.board.toASCII())
             print(history.toString())
-            if(inputs.last().value=="checkmate"){
-                if(history.turnHistory.last().player == 'w') println("1-0")
+            if (inputs.last().value == "checkmate") {
+                if (history.turnHistory.last().player == 'w') println("1-0")
                 else println("0-1")
-            }
-            else println("1/2-1/2")
+            } else println("1/2-1/2")
             break
         }
     }
 }
 
-
-// fifty move rule
 fun checkFiftyMoves(history: History, limit: Int): Boolean {
-    if (history.turnHistory.size <limit) return false
+    if (history.turnHistory.size < limit) return false
     history.turnHistory.takeLast(limit).forEach {
-        if(it.squares[it.move.squareFrom.getX()][it.move.squareFrom.getY()][2] != 'P' || it.move.special?.contains('x') == true) return false
+        if (it.squares[it.move.squareFrom.col][it.move.squareFrom.rank][2] != 'P' || it.move.special?.contains('x') == true) return false
     }
     return true
 }
 
-// threefold repetition
-fun checkRepetition(history: History, limit: Int): Boolean{
+fun checkRepetition(history: History, limit: Int): Boolean {
 
     val whiteTurns = mutableSetOf<Turn>()
     val blackTurns = mutableSetOf<Turn>()
     history.turnHistory.forEach {
-        if (it.player=='w') whiteTurns.add(it)
-        else                blackTurns.add(it)
+        if (it.player == 'w') whiteTurns.add(it)
+        else blackTurns.add(it)
     }
+
     var count = 0
-    whiteTurns.forEach {turn1->
-        whiteTurns.forEach { turn2->
-            if(turn1.moves == turn2.moves) {
+    whiteTurns.forEach { turn1 ->
+        whiteTurns.forEach { turn2 ->
+            if (turn1.moves == turn2.moves) {
                 count++
-                if (count>=limit) return true
+                if (count >= limit) return true
             }
         }
         count = 0
     }
-    blackTurns.forEach {turn1->
-        blackTurns.forEach { turn2->
-            if(turn1.moves == turn2.moves) {
+
+    blackTurns.forEach { turn1 ->
+        blackTurns.forEach { turn2 ->
+            if (turn1.moves == turn2.moves) {
                 count++
-                if (count>=limit) return true
+                if (count >= limit) return true
             }
         }
         count = 0
@@ -193,35 +212,34 @@ fun checkRepetition(history: History, limit: Int): Boolean{
     return false
 }
 
-
-fun checkIfCheck(moves: MutableSet<ArrayList<Square>>, color: String): Boolean{
+fun checkIfCheck(moves: MutableSet<ArrayList<Square>>, color: String): Boolean {
 
     moves.forEach { move ->
-        move.forEach{ square ->
-            if (color=="w"){
-                if (square.getColor()=="b" && square.getType()=='K') return true
-            }
-            else{
-                if (square.getColor()=="w" && square.getType()=='K') return true
+        move.forEach { square ->
+            if (color == "w") {
+                if (square.getColor() == "b" && square.getType() == 'K') return true
+            } else {
+                if (square.getColor() == "w" && square.getType() == 'K') return true
             }
         }
     }
     return false
 }
 
-fun mapToASCII(string: String): String{
+fun mapToASCII(string: String): String {
     var result = String()
-    val pieceMap = mapOf("bP" to '♟', "wP" to '♙', "bR" to '♜', "wR" to '♖', "bB" to '♝', "wB" to '♗',
-        "bN" to '♞', "wN" to '♘', "bQ" to '♛', "wQ" to '♕', "bK" to '♚', "wK" to '♔')
+    val pieceMap = mapOf(
+        "bP" to '♟', "wP" to '♙', "bR" to '♜', "wR" to '♖', "bB" to '♝', "wB" to '♗',
+        "bN" to '♞', "wN" to '♘', "bQ" to '♛', "wQ" to '♕', "bK" to '♚', "wK" to '♔'
+    )
     val lines = string.lines()
-    lines.forEach{
-        for (i in 0..14 step 2){
-            if (pieceMap.contains(it.substring(i,i+2))){
-                result += pieceMap[it.substring(i,i+2)] ?:""
+    lines.forEach {
+        for (i in 0..14 step 2) {
+            if (pieceMap.contains(it.substring(i, i + 2))) {
+                result += pieceMap[it.substring(i, i + 2)] ?: ""
                 result += " "
-            }
-            else {
-                result += it.substring(i,i+2)+" "
+            } else {
+                result += it.substring(i, i + 2) + " "
             }
         }
         result += "\n"
@@ -230,7 +248,7 @@ fun mapToASCII(string: String): String{
     return result
 }
 
-fun isValidMove(move: Move): Boolean{
-    return move.squareFrom.getX() in 0..7 && move.squareFrom.getY() in 0..7 &&
-            move.squareTo.getX() in 0..7 && move.squareTo.getY() in 0..7  && move.squareTo != move.squareFrom
+fun isValidMove(move: Move): Boolean {
+    return  move.squareFrom.col in 0..7 && move.squareFrom.rank in 0..7 &&
+            move.squareTo.col in 0..7 && move.squareTo.rank in 0..7 && move.squareTo != move.squareFrom
 }

@@ -1,16 +1,17 @@
-
 class Moves {
 
-    private val pawnMove = setOf(listOf(1,0))
-    private val knightMove    = setOf(listOf(1,2),  listOf(2,1),  listOf(-1,2),  listOf(-2,1),
-        listOf(1,-2), listOf(2,-1), listOf(-1,-2), listOf(-2,-1))
-    private var rookMove      = mutableSetOf<List<Int>>()
+    private val pawnMove = setOf(listOf(1, 0))
+    private val knightMove = setOf(
+        listOf(1, 2), listOf(2, 1), listOf(-1, 2), listOf(-2, 1),
+        listOf(1, -2), listOf(2, -1), listOf(-1, -2), listOf(-2, -1)
+    )
+    private var rookMove = mutableSetOf<List<Int>>()
 
-    init{
+    init {
         rookMove.addAll(rookMove())
     }
 
-    private var bishopMove  = mutableSetOf<List<Int>>()
+    private var bishopMove = mutableSetOf<List<Int>>()
 
     init {
         bishopMove.addAll(bishopMove())
@@ -23,11 +24,13 @@ class Moves {
         queenMove.addAll(rookMove())
     }
 
-    private val kingMove = setOf(listOf(1,0), listOf(0,1),   listOf(-1,0), listOf(0,-1),
-        listOf(1,1), listOf(-1,-1), listOf(-1,1), listOf(1,-1))
+    private val kingMove = setOf(
+        listOf(1, 0), listOf(0, 1), listOf(-1, 0), listOf(0, -1),
+        listOf(1, 1), listOf(-1, -1), listOf(-1, 1), listOf(1, -1)
+    )
 
-    fun getMove(type: Char?): Set<List<Int>>{
-        return when (type){
+    fun getMove(type: Char?): Set<List<Int>> {
+        return when (type) {
             'K' -> kingMove
             'Q' -> queenMove
             'R' -> rookMove
@@ -38,13 +41,13 @@ class Moves {
     }
 }
 
-fun rookMove(): MutableSet<List<Int>>{
+fun rookMove(): MutableSet<List<Int>> {
     val moves = mutableSetOf<List<Int>>()
-    for (i in 1..7){
-        val x1 = listOf(i,0)
-        val x2 = listOf(-i,0)
-        val y1 = listOf(0,i)
-        val y2 = listOf(0,-i)
+    for (i in 1..7) {
+        val x1 = listOf(i, 0)
+        val x2 = listOf(-i, 0)
+        val y1 = listOf(0, i)
+        val y2 = listOf(0, -i)
         moves.add(x1)
         moves.add(x2)
         moves.add(y1)
@@ -53,13 +56,13 @@ fun rookMove(): MutableSet<List<Int>>{
     return moves
 }
 
-fun bishopMove(): MutableSet<List<Int>>{
+fun bishopMove(): MutableSet<List<Int>> {
     val moves = mutableSetOf<List<Int>>()
-    for (i in 1..7){
-        val xx = listOf(i,i)
-        val xy = listOf(i,-i)
-        val yx = listOf(-i,i)
-        val yy = listOf(-i,-i)
+    for (i in 1..7) {
+        val xx = listOf(i, i)
+        val xy = listOf(i, -i)
+        val yx = listOf(-i, i)
+        val yy = listOf(-i, -i)
         moves.add(xx)
         moves.add(xy)
         moves.add(yx)
