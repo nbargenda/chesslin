@@ -1,4 +1,4 @@
-val defaultSquare = Square(col = 42, rank = 69)
+val defaultSquare = Square(rank = 42, column = 69)
 val defaultMove = Move(defaultSquare, defaultSquare)
 
 
@@ -158,7 +158,7 @@ class Game {
             }
             if (special.contains('x')) {
                 moves.forEach {
-                    if (it.contains(this.board.squares[x][y]) && it[0].getType() == 'P' && it[0].rank == input[0].toInt() - 97) moveFrom =
+                    if (it.contains(this.board.squares[x][y]) && it[0].getType() == 'P' && it[0].column == input[0].toInt() - 97) moveFrom =
                         it[0]
                 }
             } else {
@@ -190,7 +190,7 @@ class Game {
             else "e"
             var bool = false
             moves.forEach {
-                if (it[0].getType() == input[0] || (it[0].getType() == 'P' && ((it[0].rank == input[0].toInt() - 97) || special == "e"))) {
+                if (it[0].getType() == input[0] || (it[0].getType() == 'P' && ((it[0].column == input[0].toInt() - 97) || special == "e"))) {
                     if (it.contains(this.board.squares[x][y])) {
                         moveFrom = it[0]
                         if (bool) moveFrom = defaultSquare
@@ -220,7 +220,7 @@ class Game {
             special = if (this.board.squares[x][y].hasPiece()) "x"
             else "e"
             moves.forEach {
-                if (it[0].getType() == input[0] || (it[0].getType() == 'P' && ((it[0].rank == input[1].toInt() - 97) || special == "e"))) {
+                if (it[0].getType() == input[0] || (it[0].getType() == 'P' && ((it[0].column == input[1].toInt() - 97) || special == "e"))) {
                     moveFrom = it[0]
                 }
             }
@@ -239,7 +239,7 @@ class Game {
             val y = input[4].toInt() - 97
             val x = input[5].toInt() - 49
             moves.forEach {
-                if (it[0].getType() == input[0] && it[0].rank == input[1].toInt() - 97 && it[0].col == input[2].toInt() - 49) {
+                if (it[0].getType() == input[0] && it[0].column == input[1].toInt() - 97 && it[0].rank == input[2].toInt() - 49) {
                     moveFrom = it[0]
                 }
             }
@@ -270,8 +270,8 @@ class Game {
                     }
                 }
             }
-            if (moveFrom.getType() == 'K' && y - moveFrom.rank > 1) return parseCastlingShort(moves)
-            else if (moveFrom.getType() == 'K' && moveFrom.rank - y > 1) return parseCastlingLong(moves)
+            if (moveFrom.getType() == 'K' && y - moveFrom.column > 1) return parseCastlingShort(moves)
+            else if (moveFrom.getType() == 'K' && moveFrom.column - y > 1) return parseCastlingLong(moves)
             return Move(moveFrom, this.board.squares[x][y])
         } catch (e: StringIndexOutOfBoundsException) {
             return defaultMove
@@ -285,7 +285,7 @@ class Game {
             val x = input[3].toInt() - 49
             if (!this.board.squares[x][y].hasPiece()) {
                 moves.forEach {
-                    if (it[0].getType() == input[0] && it[0].rank == (input[1].toInt() - 97)) {
+                    if (it[0].getType() == input[0] && it[0].column == (input[1].toInt() - 97)) {
                         moveFrom = it[0]
                     }
                 }
@@ -333,7 +333,7 @@ class Game {
             val x = input[4].toInt() - 49
             if (!this.board.squares[x][y].hasPiece()) {
                 moves.forEach {
-                    if (it[0].getType() == input[0] && it[0].rank == input[1].toInt() - 97 && it[0].col == input[2].toInt() - 49) {
+                    if (it[0].getType() == input[0] && it[0].column == input[1].toInt() - 97 && it[0].rank == input[2].toInt() - 49) {
                         moveFrom = it[0]
                     }
                 }
@@ -354,11 +354,11 @@ class Game {
 
     fun executeEnPassantWhite(move: Move) {
         this.board.basicMove(move.squareFrom, move.squareTo)
-        this.board.squares[move.squareTo.col - 1][move.squareTo.rank].emptySquare()
+        this.board.squares[move.squareTo.rank - 1][move.squareTo.column].emptySquare()
     }
 
     fun executeEnPassantBlack(move: Move) {
         this.board.basicMove(move.squareFrom, move.squareTo)
-        this.board.squares[move.squareTo.col + 1][move.squareTo.rank].emptySquare()
+        this.board.squares[move.squareTo.rank + 1][move.squareTo.column].emptySquare()
     }
 }

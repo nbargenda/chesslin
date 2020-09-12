@@ -11,7 +11,7 @@ class Turn(
         val tempSquares = arrayListOf<ArrayList<Int>>()
         possibleMoves.forEach {
             it.forEach { square ->
-                tempSquares.add(arrayListOf(square.col, square.rank))
+                tempSquares.add(arrayListOf(square.rank, square.column))
             }
             moves.add(tempSquares)
         }
@@ -23,7 +23,7 @@ class Turn(
         val tempSquares = arrayListOf<ArrayList<Char?>>()
         currentSquares.forEach {
             it.forEach { square ->
-                tempSquares.add(arrayListOf(square.col.toChar(), square.rank.toChar(), square.getType()))
+                tempSquares.add(arrayListOf(square.rank.toChar(), square.column.toChar(), square.getType()))
             }
             squares.add(tempSquares)
         }

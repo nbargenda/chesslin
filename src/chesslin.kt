@@ -1,14 +1,20 @@
 import java.lang.NullPointerException
+import java.io.File
 
-fun main() {
+fun main(args: Array<String>) {
 
     val testgame = Game()
     testgame.startingPosition()
-    val inputs = mutableListOf<Input>()
-    var input: String?
     val capturedPieces: MutableSet<Piece> = mutableSetOf()
     var turn = 1
     val history = History(arrayListOf())
+    val inputs = mutableListOf<Input>()
+    var input: String?
+    var gameInputs: List<String> = listOf()
+    if (args[0] == "-t"){
+        gameInputs = parsePGN(File("${args[1]}.txt").readText())
+        gameInputs = removeEmptyString(gameInputs)
+    }
 
     while (true) {
 
@@ -32,19 +38,18 @@ fun main() {
             if (tempMoves.isNotEmpty()) possibleMoves.add(tempMoves)
         }
 
-        possibleMoves = testgame.board.removePinnedMoves(possibleMoves, otherMoves)
-        possibleMoves = testgame.board.removeKingMovesCheck(possibleMoves, otherPieces)
-
-        if ("Check" in currentState.value) {
-            possibleMoves = testgame.board.possibleMovesCheck(possibleMoves, otherMoves)
-        }
-
         otherPieces.forEach {
             val tempMoves = testgame.board.possibleMovesSquare(it)
             if (tempMoves.isNotEmpty()) otherMoves.add(tempMoves)
         }
 
+        possibleMoves = testgame.board.removePinnedMoves(possibleMoves, otherMoves)
+        possibleMoves = testgame.board.removeKingMovesCheck(possibleMoves, otherPieces)
 
+
+        if ("Check" in currentState.value) {
+            possibleMoves = testgame.board.possibleMovesCheck(possibleMoves, otherMoves)
+        }
 
         if (!testgame.stateMachine.isFinalState(currentState)) {
 
@@ -53,18 +58,11 @@ fun main() {
             println(capturedPieces)
             println("Please input Move")
 
-            input = readLine()
+            input = if (args[0] == "-t") gameInputs[turn-1] else readLine()
+            println(input)
+
             val move: Move = testgame.parseMove(input ?: "", possibleMoves)
-            history.turnHistory.add(
-                Turn(
-                    turn,
-                    currentState.value[0],
-                    testgame.board.squares,
-                    possibleMoves,
-                    Move(move.squareFrom, move.squareTo, move.special),
-                    input ?: ""
-                )
-            )
+            history.turnHistory.add(Turn(turn, currentState.value[0], testgame.board.squares, possibleMoves, Move(move.squareFrom, move.squareTo, move.special), input ?: ""))
 
             if (isValidMove(move)) {
                 turn++
@@ -84,12 +82,12 @@ fun main() {
                             move.special.contains('e') -> {
                                 possibleMoves.remove(testgame.board.possibleMovesSquare(move.squareFrom))
                                 if (move.squareFrom.getColor() == "w") {
-                                    testgame.board.squares[move.squareTo.col - 1][move.squareTo.rank].piece?.let {
+                                    testgame.board.squares[move.squareTo.rank - 1][move.squareTo.column].piece?.let {
                                         capturedPieces.add(it)
                                     }
                                     testgame.executeEnPassantWhite(move)
                                 } else {
-                                    testgame.board.squares[move.squareTo.col + 1][move.squareTo.rank].piece?.let {
+                                    testgame.board.squares[move.squareTo.rank + 1][move.squareTo.column].piece?.let {
                                         capturedPieces.add(it)
                                     }
                                     testgame.executeEnPassantBlack(move)
@@ -117,21 +115,23 @@ fun main() {
                         otherPieces = testgame.board.getWhitePieces(pieces)
                     }
 
-                    possibleMoves.remove(testgame.board.possibleMovesSquare(move.squareFrom))
-                    possibleMoves.add(testgame.board.possibleMovesSquare(move.squareTo))
-
                     otherPieces.forEach {
                         val tempMoves = testgame.board.possibleMovesSquare(it)
                         if (tempMoves.isNotEmpty()) otherMoves.add(tempMoves)
                     }
-                    otherMoves = testgame.board.removeKingMovesCheck(otherMoves, currentPieces)
+
+                    currentPieces.forEach {
+                        val tempMoves = testgame.board.possibleMovesSquare(it)
+                        if (tempMoves.isNotEmpty()) possibleMoves.add(tempMoves)
+                    }
                     otherMoves = testgame.board.removePinnedMoves(otherMoves, possibleMoves)
+                    otherMoves = testgame.board.removeKingMovesCheck(otherMoves, currentPieces)
+
+                    possibleMoves = testgame.board.removePinnedMoves(possibleMoves, otherMoves)
+                    possibleMoves = testgame.board.removeKingMovesCheck(possibleMoves, otherPieces)
 
                     if (checkIfCheck(possibleMoves, currentState.value[0].toString())) {
-                        otherMoves = testgame.board.possibleMovesCheck(
-                            otherMoves,
-                            testgame.board.removeEmptyMoves(possibleMoves)
-                        )
+                        otherMoves = testgame.board.possibleMovesCheck(otherMoves, testgame.board.removeEmptyMoves(possibleMoves))
                     }
 
                     when {
@@ -170,12 +170,28 @@ fun main() {
             break
         }
     }
+
 }
+
+fun removeEmptyString(list: List<String>): MutableList<String> {
+
+    val result = mutableListOf<String>()
+    list.forEach {
+        if(it!="") result.add(it)
+    }
+    return result
+}
+
+
+fun parsePGN(string: String) =
+    string.split("]").last().trim().replace("\\{.*?}".toRegex(),"").replace( /*"[0-9]*\\. "*/"""[0-9]*\."""
+        .toRegex(),"").replace("+","").replace("#","").replace(" \n"," ").replace("\r","")
+        .replace("\n"," ").split(" ").toTypedArray().dropLast(1)
 
 fun checkFiftyMoves(history: History, limit: Int): Boolean {
     if (history.turnHistory.size < limit) return false
     history.turnHistory.takeLast(limit).forEach {
-        if (it.squares[it.move.squareFrom.col][it.move.squareFrom.rank][2] != 'P' || it.move.special?.contains('x') == true) return false
+        if (it.squares[it.move.squareFrom.rank][it.move.squareFrom.column][2] != 'P' || it.move.special?.contains('x') == true) return false
     }
     return true
 }
@@ -248,7 +264,5 @@ fun mapToASCII(string: String): String {
     return result
 }
 
-fun isValidMove(move: Move): Boolean {
-    return  move.squareFrom.col in 0..7 && move.squareFrom.rank in 0..7 &&
-            move.squareTo.col in 0..7 && move.squareTo.rank in 0..7 && move.squareTo != move.squareFrom
-}
+fun isValidMove(move: Move) =  move.squareFrom.rank in 0..7 && move.squareFrom.column in 0..7 && move.squareTo.rank in 0..7 && move.squareTo.column in 0..7 && move.squareTo != move.squareFrom
+

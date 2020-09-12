@@ -37,16 +37,16 @@ class Board {
         kingMoves.forEach {
             if (it in threatenedSquares && it.getType() != 'K') result.add(it)
             if (kingMoves[0].getColor() == "w") {
-                if (it.col < 6) {
-                    if ((it.rank < 7 && this.squares[it.col + 1][it.rank + 1].getType() == 'P' && this.squares[it.col + 1][it.rank + 1].getColor() == "b") ||
-                        (it.rank > 0 && this.squares[it.col + 1][it.rank - 1].getType() == 'P' && this.squares[it.col + 1][it.rank - 1].getColor() == "b")
+                if (it.rank < 6) {
+                    if ((it.column < 7 && this.squares[it.rank + 1][it.column + 1].getType() == 'P' && this.squares[it.rank + 1][it.column + 1].getColor() == "b") ||
+                        (it.column > 0 && this.squares[it.rank + 1][it.column - 1].getType() == 'P' && this.squares[it.rank + 1][it.column - 1].getColor() == "b")
                     )
                         result.add(it)
                 }
             } else {
-                if (it.col > 1) {
-                    if ((it.rank < 7 && this.squares[it.col - 1][it.rank + 1].getType() == 'P' && this.squares[it.col - 1][it.rank + 1].getColor() == "w") ||
-                        (it.rank > 0 && this.squares[it.col - 1][it.rank - 1].getType() == 'P' && this.squares[it.col - 1][it.rank - 1].getColor() == "w")
+                if (it.rank > 1) {
+                    if ((it.column < 7 && this.squares[it.rank - 1][it.column + 1].getType() == 'P' && this.squares[it.rank - 1][it.column + 1].getColor() == "w") ||
+                        (it.column > 0 && this.squares[it.rank - 1][it.column - 1].getType() == 'P' && this.squares[it.rank - 1][it.column - 1].getColor() == "w")
                     )
                         result.add(it)
                 }
@@ -69,19 +69,17 @@ class Board {
         return moves
     }
 
-    fun removePinnedMoves(
-        possibleMoves: MutableSet<ArrayList<Square>>,
-        otherMoves: MutableSet<ArrayList<Square>>
-    ): MutableSet<ArrayList<Square>> {
+    fun removePinnedMoves(possibleMoves: MutableSet<ArrayList<Square>>, otherMoves: MutableSet<ArrayList<Square>>): MutableSet<ArrayList<Square>> {
         val result = mutableSetOf<ArrayList<Square>>()
         possibleMoves.forEach {
             val pinningPiece = isPinned(it[0], otherMoves)
             if (pinningPiece.hasPiece()) {
                 it.forEach { square ->
-                    if (square != pinningPiece) result.add(it)
+                    if (square != pinningPiece) result.add(it) // BUG: if square == pinningPiece at some point, still gets removed
                 }
             }
         }
+
         possibleMoves.removeAll(result)
         return possibleMoves
     }
@@ -110,33 +108,33 @@ class Board {
 * this method is less complicated than isPinned, because we already know the square that is checking the King
  */
     private fun wouldPinItself(square: Square, squareThatChecks: Square): Boolean {
-        val kingSquare = findKing(square.getColor())
+        val kingSquare = findKing(squareThatChecks.getInverseColor())
         val threatenedSquares = threatenedSquaresRBQ(squareThatChecks)
         val where: String = when {
-            kingSquare.col > squareThatChecks.col -> when {
-                kingSquare.rank > squareThatChecks.rank -> "ld"
-                kingSquare.rank < squareThatChecks.rank -> "rd"
+            kingSquare.rank > squareThatChecks.rank -> when {
+                kingSquare.column > squareThatChecks.column -> "ld"
+                kingSquare.column < squareThatChecks.column -> "rd"
                 else -> "ds"
             }
-            kingSquare.col < squareThatChecks.col -> when {
-                kingSquare.rank > squareThatChecks.rank -> "lu"
-                kingSquare.rank < squareThatChecks.rank -> "ru"
+            kingSquare.rank < squareThatChecks.rank -> when {
+                kingSquare.column > squareThatChecks.column -> "lu"
+                kingSquare.column < squareThatChecks.column -> "ru"
                 else -> "us"
             }
-            else -> if (kingSquare.rank < squareThatChecks.rank) "rs"
+            else -> if (kingSquare.column < squareThatChecks.column) "rs"
             else "ls"
         }
 
         threatenedSquares.forEach {
             when (where) {
-                "ld" -> if (square.col > it.col && square.rank > it.rank && square == it) return true
-                "rd" -> if (square.col > it.col && square.rank < it.rank && square == it) return true
-                "lu" -> if (square.col < it.col && square.rank > it.rank && square == it) return true
-                "ru" -> if (square.col < it.col && square.rank < it.rank && square == it) return true
-                "ds" -> if (it.rank == kingSquare.rank && it.col > squareThatChecks.col) return true
-                "us" -> if (it.rank == kingSquare.rank && it.col < squareThatChecks.col) return true
-                "rs" -> if (it.col == kingSquare.col && it.rank < squareThatChecks.rank) return true
-                "ls" -> if (it.col == kingSquare.col && it.rank > squareThatChecks.rank) return true
+                "ld" -> if (squareThatChecks.rank < it.rank && squareThatChecks.column < it.column && square == it) return true
+                "rd" -> if (squareThatChecks.rank < it.rank && squareThatChecks.column > it.column && square == it) return true
+                "lu" -> if (squareThatChecks.rank > it.rank && squareThatChecks.column < it.column && square == it) return true
+                "ru" -> if (squareThatChecks.rank > it.rank && squareThatChecks.column > it.column && square == it) return true
+                "ds" -> if (it.column == kingSquare.column && it.rank > squareThatChecks.rank && square == it) return true
+                "us" -> if (it.column == kingSquare.column && it.rank < squareThatChecks.rank && square == it) return true
+                "rs" -> if (it.rank == kingSquare.rank && it.column < squareThatChecks.column && square == it) return true
+                "ls" -> if (it.rank == kingSquare.rank && it.column > squareThatChecks.column && square == it) return true
             }
         }
         return false
@@ -146,9 +144,8 @@ class Board {
         val kingSquare = findKing(square.getColor())
         val threateningSquares: MutableSet<Square> = mutableSetOf()
         if (square.getType() == 'K') return defaultSquare
-        if (square.col != kingSquare.col && square.rank != kingSquare.rank &&
-            ((square.col - kingSquare.col).absoluteValue != (square.rank - kingSquare.rank).absoluteValue)
-        )
+        if (square.rank != kingSquare.rank && square.column != kingSquare.column &&
+            ((square.rank - kingSquare.rank).absoluteValue != (square.column - kingSquare.column).absoluteValue))
             return defaultSquare
         removeEmptyMoves(otherMoves).forEach {
             try {
@@ -162,82 +159,75 @@ class Board {
                 return defaultSquare
             }
         }
+        // when there are 2, returns defaultsquare -> not pinned! WHICH MIGHT BE WRONG
         threateningSquares.forEach {
             when {
-                it.col > square.col -> {
+                it.rank > square.rank -> {
                     when {
-                        it.rank < square.rank -> {
-                            val x = square.col
-                            val y = square.rank
+                        it.column < square.column -> {
+                            val x = square.rank
+                            val y = square.column
                             for (i in 1..(maxOf(x, y)..7).count()) {
                                 try {
                                     if (this.squares[x - i][y + i].hasPiece()) {
                                         if (this.squares[x - i][y + i].getType() == 'K') return it
                                         return defaultSquare
                                     }
-                                } catch (e: IndexOutOfBoundsException) {
-                                    return defaultSquare
-                                }
+                                } catch (e: IndexOutOfBoundsException) { }
                             }
                         } // rd
-                        it.rank > square.rank -> {
-                            val x = square.col
-                            val y = square.rank
+                        it.column > square.column -> {
+                            val x = square.rank
+                            val y = square.column
                             for (i in 1..(maxOf(x, y)..7).count()) {
                                 try {
                                     if (this.squares[x - i][y - i].hasPiece()) {
                                         if (this.squares[x - i][y - i].getType() == 'K') return it
                                         return defaultSquare
                                     }
-                                } catch (e: IndexOutOfBoundsException) {
-                                    return defaultSquare
-                                }
+                                } catch (e: IndexOutOfBoundsException) {}
                             }
                         } // ld
                         else -> {
-                            for (i in square.col - 1 downTo 0) {
-                                if (this.squares[i][it.rank].hasPiece()) {
-                                    if (this.squares[i][it.rank].getType() == 'K') return it
+                            for (i in square.rank - 1 downTo 0) {
+                                if (this.squares[i][it.column].hasPiece()) {
+                                    if (this.squares[i][it.column].getType() == 'K') return it
                                     return defaultSquare
                                 }
                             }
                         }
                     }
                 }
-                it.col < square.col -> {
+                it.rank < square.rank -> {
                     when {
-                        it.rank < square.rank -> {
-                            val x = square.col
-                            val y = square.rank
+                        it.column < square.column -> {
+                            val x = square.rank
+                            val y = square.column
                             for (i in 1..(maxOf(x, y)..7).count()) {
                                 try {
                                     if (this.squares[x + i][y + i].hasPiece()) {
                                         if (this.squares[x + i][y + i].getType() == 'K') return it
                                         return defaultSquare
                                     }
-                                } catch (e: IndexOutOfBoundsException) {
-                                    return defaultSquare
-                                }
+                                } catch (e: IndexOutOfBoundsException) { }
                             }
                         } // ru
-                        it.rank > square.rank -> {
-                            val x = square.col
-                            val y = square.rank
+                        it.column > square.column -> {
+                            val x = square.rank
+                            val y = square.column
                             for (i in 1..(maxOf(x, y)..7).count()) {
                                 try {
                                     if (this.squares[x + i][y - i].hasPiece()) {
                                         if (this.squares[x + i][y - i].getType() == 'K') return it
                                         return defaultSquare
                                     }
-                                } catch (e: IndexOutOfBoundsException) {
-                                    return defaultSquare
-                                }
+                                } catch (e: IndexOutOfBoundsException) { }
                             }
                         } // lu
                         else -> {
-                            for (i in square.col + 1..7) {
-                                if (this.squares[i][it.rank].hasPiece()) {
-                                    if (this.squares[i][it.rank].getType() == 'K') return it
+                            for (i in square.rank + 1..7) {
+                                if (this.squares[i][it.column].hasPiece()) {
+                                    if (this.squares[i][it.column].getType() == 'K') return it
                                     return defaultSquare
                                 }
                             }
@@ -246,17 +236,17 @@ class Board {
                 }
 
                 else -> {
-                    if (it.rank < square.rank) {
-                        for (i in square.rank + 1..7) {
-                            if (this.squares[it.col][i].hasPiece()) {
-                                if (this.squares[it.col][i].getType() == 'K') return it
+                    if (it.column < square.column) {
+                        for (i in square.column + 1..7) {
+                            if (this.squares[it.rank][i].hasPiece()) {
+                                if (this.squares[it.rank][i].getType() == 'K') return it
                                 return defaultSquare
                             }
                         }
                     } else {
-                        for (i in square.rank - 1 downTo 0) {
-                            if (this.squares[it.col][i].hasPiece()) {
-                                if (this.squares[it.col][i].getType() == 'K') return it
+                        for (i in square.column - 1 downTo 0) {
+                            if (this.squares[it.rank][i].hasPiece()) {
+                                if (this.squares[it.rank][i].getType() == 'K') return it
                                 return defaultSquare
                             }
                         }
@@ -302,20 +292,12 @@ class Board {
                                     'P', 'N' -> {
                                         it.forEach { square ->
                                             if (square != it[0] && square == checkSquare) result.add(
-                                                arrayListOf(
-                                                    it[0],
-                                                    square
-                                                )
-                                            )
+                                                arrayListOf(it[0], square))
                                         }
                                     }
                                     'Q', 'B', 'R' -> {
                                         it.forEach { square ->
-                                            if (square != it[0] && ((square == checkSquare) || (wouldPinItself(
-                                                    square,
-                                                    checkSquares.first()
-                                                )))
-                                            ) result.add(arrayListOf(it[0], square))
+                                            if (square != it[0] && ((square == checkSquare) || (wouldPinItself(square, checkSquares.first())))) result.add(arrayListOf(it[0], square))
                                         }
                                     }
                                 }
@@ -339,16 +321,16 @@ class Board {
     private fun possibleMoves(square: Square): MutableSet<Square> {
         val result = mutableSetOf<Square>()
         if (square.getType() == 'P') {
-            if (square.getColor() == "w" && !this.squares[square.col + 1][square.rank].hasPiece()) {
+            if (square.getColor() == "w" && !this.squares[square.rank + 1][square.column].hasPiece()) {
 
-                if (!square.getHasMoved()!! && !this.squares[square.col + 2][square.rank].hasPiece())
-                    result.add(this.squares[square.col + 2][square.rank])
-                result.add(this.squares[square.col + 1][square.rank])
+                if (!square.getHasMoved()!! && !this.squares[square.rank + 2][square.column].hasPiece())
+                    result.add(this.squares[square.rank + 2][square.column])
+                result.add(this.squares[square.rank + 1][square.column])
 
-            } else if (square.getColor() == "b" && !this.squares[square.col - 1][square.rank].hasPiece()) {
-                if (!square.getHasMoved()!! && !this.squares[square.col - 2][square.rank].hasPiece())
-                    result.add(this.squares[square.col - 2][square.rank])
-                result.add(this.squares[square.col - 1][square.rank])
+            } else if (square.getColor() == "b" && !this.squares[square.rank - 1][square.column].hasPiece()) {
+                if (!square.getHasMoved()!! && !this.squares[square.rank - 2][square.column].hasPiece())
+                    result.add(this.squares[square.rank - 2][square.column])
+                result.add(this.squares[square.rank - 1][square.column])
             }
 
         }
@@ -468,33 +450,33 @@ class Board {
 
     private fun checkEnPassanteLeft(square: Square, lastMove: Move): Boolean {
         return if (square.getColor() == "w") {
-            lastMove.squareTo.getType() == 'P' && lastMove.squareFrom.col == square.col + 2 &&
-                    lastMove.squareFrom.rank == square.rank - 1 && lastMove.squareTo.rank == square.rank - 1 &&
-                    lastMove.squareTo.col == square.col
+            lastMove.squareTo.getType() == 'P' && lastMove.squareFrom.rank == square.rank + 2 &&
+                    lastMove.squareFrom.column == square.column - 1 && lastMove.squareTo.column == square.column - 1 &&
+                    lastMove.squareTo.rank == square.rank
         } else {
-            lastMove.squareTo.getType() == 'P' && lastMove.squareFrom.col == square.col - 2 &&
-                    lastMove.squareFrom.rank == square.rank - 1 && lastMove.squareTo.rank == square.rank - 1 &&
-                    lastMove.squareTo.col == square.col
+            lastMove.squareTo.getType() == 'P' && lastMove.squareFrom.rank == square.rank - 2 &&
+                    lastMove.squareFrom.column == square.column - 1 && lastMove.squareTo.column == square.column - 1 &&
+                    lastMove.squareTo.rank == square.rank
         }
     }
 
     private fun checkEnPassanteRight(square: Square, lastMove: Move): Boolean {
         return if (square.getColor() == "w") {
-            lastMove.squareTo.getType() == 'P' && lastMove.squareFrom.col == square.col + 2 &&
-                    lastMove.squareFrom.rank == square.rank + 1 && lastMove.squareTo.rank == square.rank + 1 &&
-                    lastMove.squareTo.col == square.col
+            lastMove.squareTo.getType() == 'P' && lastMove.squareFrom.rank == square.rank + 2 &&
+                    lastMove.squareFrom.column == square.column + 1 && lastMove.squareTo.column == square.column + 1 &&
+                    lastMove.squareTo.rank == square.rank
         } else {
-            lastMove.squareTo.getType() == 'P' && lastMove.squareFrom.col == square.col - 2 &&
-                    lastMove.squareFrom.rank == square.rank + 1 && lastMove.squareTo.rank == square.rank + 1 &&
-                    lastMove.squareTo.col == square.col
+            lastMove.squareTo.getType() == 'P' && lastMove.squareFrom.rank == square.rank - 2 &&
+                    lastMove.squareFrom.column == square.column + 1 && lastMove.squareTo.column == square.column + 1 &&
+                    lastMove.squareTo.rank == square.rank
         }
     }
 
     private fun checkBlock(squares: MutableSet<Square>): MutableSet<List<Int>> {
         val result = mutableSetOf<List<Int>>()
         squares.forEach {
-            result.add(listOf(it.col, it.rank))
-            if (this.squares[it.col][it.rank].hasPiece()) return result
+            result.add(listOf(it.rank, it.column))
+            if (this.squares[it.rank][it.column].hasPiece()) return result
         }
         return result
     }
@@ -507,31 +489,31 @@ class Board {
         }
 
         if (square.getColor() == "w") {
-            if (square.rank > 0 && (this.squares[square.col + 1][square.rank - 1].hasPiece() || checkEnPassanteLeft(
+            if (square.column > 0 && (this.squares[square.rank + 1][square.column - 1].hasPiece() || checkEnPassanteLeft(
                     square,
                     lastMove
                 ))
             )
-                result.add(this.squares[square.col + 1][square.rank - 1])
-            if (square.rank < 7 && (this.squares[square.col + 1][square.rank + 1].hasPiece() || checkEnPassanteRight(
+                result.add(this.squares[square.rank + 1][square.column - 1])
+            if (square.column < 7 && (this.squares[square.rank + 1][square.column + 1].hasPiece() || checkEnPassanteRight(
                     square,
                     lastMove
                 ))
             )
-                result.add(this.squares[square.col + 1][square.rank + 1])
+                result.add(this.squares[square.rank + 1][square.column + 1])
         } else {
-            if (square.rank > 0 && (this.squares[square.col - 1][square.rank - 1].hasPiece() || checkEnPassanteLeft(
+            if (square.column > 0 && (this.squares[square.rank - 1][square.column - 1].hasPiece() || checkEnPassanteLeft(
                     square,
                     lastMove
                 ))
             )
-                result.add(this.squares[square.col - 1][square.rank - 1])
-            if (square.rank < 7 && (this.squares[square.col - 1][square.rank + 1].hasPiece() || checkEnPassanteRight(
+                result.add(this.squares[square.rank - 1][square.column - 1])
+            if (square.column < 7 && (this.squares[square.rank - 1][square.column + 1].hasPiece() || checkEnPassanteRight(
                     square,
                     lastMove
                 ))
             )
-                result.add(this.squares[square.col - 1][square.rank + 1])
+                result.add(this.squares[square.rank - 1][square.column + 1])
         }
 
         return result
@@ -547,8 +529,8 @@ class Board {
         val possibleSquaresXY: MutableSet<List<Int>> = mutableSetOf()
         val possibleSquaresYX: MutableSet<List<Int>> = mutableSetOf()
         val possibleSquaresYY: MutableSet<List<Int>> = mutableSetOf()
-        val x = square.col
-        val y = square.rank
+        val x = square.rank
+        val y = square.column
         val possibleSquares = mutableSetOf<List<Int>>()
 
         possibleMoves.forEach {
@@ -582,7 +564,7 @@ class Board {
         val possibleMoves = moves.getMove(square.getType())
         val possibleSquares: MutableSet<List<Int>> = mutableSetOf()
         possibleMoves.forEach {
-            possibleSquares.add(listOf(square.col + it[0], square.rank + it[1]))
+            possibleSquares.add(listOf(square.rank + it[0], square.column + it[1]))
         }
         return removeInvalidMoves(possibleSquares)
     }
@@ -677,28 +659,4 @@ class Board {
         squareTo.piece = squareFrom.piece
         squareFrom.emptySquare()
     }
-}
-
-class Square(var piece: Piece? = null, val col: Int, val rank: Int) {
-
-    fun hasPiece(): Boolean {
-        return this.piece != null
-    }
-
-    fun emptySquare() {
-        this.piece = null
-    }
-
-    fun getColor(): String? {
-        return this.piece?.getColor()
-    }
-
-    fun getType(): Char? {
-        return this.piece?.type
-    }
-
-    fun getHasMoved(): Boolean? {
-        return this.piece?.hasMoved
-    }
-
 }
