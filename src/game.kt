@@ -105,6 +105,22 @@ class Game {
         return state
     }
 
+    fun parseMove(input: String, moves: MutableSet<ArrayList<Square>>): Move{
+
+        return if (input.isNotEmpty())
+            when {
+                input[0] in 'a'..'h' && input[1] !='x' && input != "draw"       -> parsePawnMove(input, moves)
+                input.contains('=')                                             -> parsePromotion(input, moves)
+                input.contains('x')                                             -> parseCapture(input, moves)
+                input[1] in 'a'..'h' && input[2] !in 'a'..'h'                   -> parsePieceMove(input, moves)
+                input.length==4      && input != "draw"                         -> parse4Move(input, moves)
+                input == "O-O"                                                  -> parseCastlingShort(moves)
+                input == "O-O-O"                                                -> parseCastlingLong(moves)
+                else                                                            -> parse5Move(input, moves)
+            }
+        else defaultMove
+    }
+
     private fun parsePawnMove(input: String, moves: MutableSet<ArrayList<Square>>): Move{
         return try{
             var moveFrom = defaultSquare
@@ -123,19 +139,118 @@ class Game {
         }
     }
 
-    private fun parse5Move(input: String, moves: MutableSet<ArrayList<Square>>): Move{
+    private fun parsePromotion(input: String, moves: MutableSet<java.util.ArrayList<Square>>): Move {
+
+        try{
+            if (input.last()=='=') return defaultMove
+            var moveFrom = defaultSquare
+            val special = when{
+                input.contains('x') -> "xp"+input.last()
+                else                -> "p"+input.last()
+            }
+            val y = when{
+                input.contains('x') -> input[2].toInt()-97
+                else                -> input[0].toInt()-97
+            }
+            val x= when{
+                input.contains('x') -> input[3].toInt()-49
+                else                -> input[1].toInt()-49
+            }
+            if (special.contains('x')){
+                moves.forEach {
+                    if (it.contains(this.board.squares[x][y]) && it[0].getType()=='P' && it[0].getY() == input[0].toInt()-97 ) moveFrom = it[0]
+                }
+            }
+            else{
+                moves.forEach {
+                    if (it.contains(this.board.squares[x][y]) && it[0].getType()=='P') moveFrom = it[0]
+                }
+            }
+            return Move(moveFrom, this.board.squares[x][y], special)
+        }
+        catch(e: StringIndexOutOfBoundsException){
+            return defaultMove
+        }
+    }
+
+    private fun parseCapture(input: String, moves: MutableSet<ArrayList<Square>>): Move{
+        return when {
+            input [1] == 'x' -> capture1(input, moves)
+            input [2] == 'x' -> capture2(input, moves)
+            else             -> capture3(input, moves)
+        }
+    }
+
+    private fun capture1(input: String, moves: MutableSet<ArrayList<Square>>): Move{
         try{
             var moveFrom = defaultSquare
-            val y = input[3].toInt()-97
-            val x = input[4].toInt()-49
-            if(!this.board.squares[x][y].hasPiece()) {
-                moves.forEach {
-                    if (it[0].getType() == input[0] && it[0].getY() == input[1].toInt() - 97 && it[0].getX() == input[2].toInt() - 49) {
+            val y = input[2].toInt()-97
+            val x = input[3].toInt()-49
+            val special: String
+            special = if (this.board.squares[x][y].hasPiece()) "x"
+            else "e"
+            var bool = false
+            moves.forEach {
+                if (it[0].getType()==input[0] || (it[0].getType()=='P' && ((it[0].getY()==input[0].toInt()-97) || special == "e"))) {
+                    if (it.contains(this.board.squares[x][y])) {
                         moveFrom = it[0]
+
+                        if (bool) {
+                            moveFrom = defaultSquare
+                        }
+                        bool = true
                     }
                 }
             }
-            return Move(moveFrom, this.board.squares[x][y])
+
+            if(moveFrom.getType()=='P'){
+                when (moves.first()[0].getColor()){
+                    "w" -> if (x == 7) return defaultMove
+                    "b" -> if (x == 0) return defaultMove
+                }
+            }
+            return Move(moveFrom, this.board.squares[x][y], special)
+        }
+        catch(e: StringIndexOutOfBoundsException){
+            return defaultMove
+        }
+    }
+
+    private fun capture2(input: String, moves: MutableSet<ArrayList<Square>>): Move{
+        var moveFrom = defaultSquare
+        try{
+            val y = input[3].toInt()-97
+            val x = input[4].toInt()-49
+            val special: String
+            special = if (this.board.squares[x][y].hasPiece()) "x"
+            else "e"
+            moves.forEach {
+                if (it[0].getType()==input[0] || (it[0].getType()=='P' && ((it[0].getY()==input[1].toInt()-97) || special == "e"))){
+                    moveFrom = it[0]
+                }
+            }
+
+            return Move(moveFrom, this.board.squares[x][y], special)
+        }
+        catch(e: StringIndexOutOfBoundsException){
+            return defaultMove
+        }
+
+    }
+
+    private fun capture3(input: String, moves: MutableSet<ArrayList<Square>>): Move{
+        try{
+            var moveFrom = defaultSquare
+            val special = "x"
+            val y = input[4].toInt()-97
+            val x = input[5].toInt()-49
+            moves.forEach {
+                if (it[0].getType()==input[0] && it[0].getY()==input[1].toInt()-97 && it[0].getX()==input[2].toInt()-49){
+                    moveFrom = it[0]
+                }
+            }
+            return Move(moveFrom, this.board.squares[x][y], special)
+
         }
         catch(e: StringIndexOutOfBoundsException){
             return defaultMove
@@ -190,100 +305,6 @@ class Game {
         }
     }
 
-    private fun capture1(input: String, moves: MutableSet<ArrayList<Square>>): Move{
-        try{
-            var moveFrom = defaultSquare
-            val y = input[2].toInt()-97
-            val x = input[3].toInt()-49
-            val special: String
-            special = if (this.board.squares[x][y].hasPiece()) "x"
-            else "e"
-            var bool = false
-            moves.forEach {
-                if (it[0].getType()==input[0] || (it[0].getType()=='P' && ((it[0].getY()==input[0].toInt()-97) || special == "e"))) {
-                    if (it.contains(this.board.squares[x][y])) {
-                        moveFrom = it[0]
-
-                        if (bool) {
-                            moveFrom = defaultSquare
-                        }
-                        bool = true
-                    }
-                }
-            }
-
-            if(moveFrom.getType()=='P'){
-                when (moves.first()[0].getColor()){
-                    "w" -> if (x == 7) return defaultMove
-                    "b" -> if (x == 0) return defaultMove
-                }
-            }
-            return Move(moveFrom, this.board.squares[x][y], special)
-        }
-        catch(e: StringIndexOutOfBoundsException){
-            return defaultMove
-        }
-    }
-
-    fun enPassantWhite(move: Move){
-        this.board.basicMove(move.squareFrom, move.squareTo)
-        this.board.squares[move.squareTo.getX()-1][move.squareTo.getY()].emptySquare()
-    }
-
-    fun enPassantBlack(move: Move){
-        this.board.basicMove(move.squareFrom, move.squareTo)
-        this.board.squares[move.squareTo.getX()+1][move.squareTo.getY()].emptySquare()
-    }
-
-    private fun capture2(input: String, moves: MutableSet<ArrayList<Square>>): Move{
-        var moveFrom = defaultSquare
-        try{
-            val y = input[3].toInt()-97
-            val x = input[4].toInt()-49
-            val special: String
-            special = if (this.board.squares[x][y].hasPiece()) "x"
-            else "e"
-            moves.forEach {
-                if (it[0].getType()==input[0] || (it[0].getType()=='P' && ((it[0].getY()==input[1].toInt()-97) || special == "e"))){
-                    moveFrom = it[0]
-                }
-            }
-
-            return Move(moveFrom, this.board.squares[x][y], special)
-        }
-        catch(e: StringIndexOutOfBoundsException){
-            return defaultMove
-        }
-
-    }
-
-    private fun capture3(input: String, moves: MutableSet<ArrayList<Square>>): Move{
-        try{
-            var moveFrom = defaultSquare
-            val special = "x"
-            val y = input[4].toInt()-97
-            val x = input[5].toInt()-49
-            moves.forEach {
-                if (it[0].getType()==input[0] && it[0].getY()==input[1].toInt()-97 && it[0].getX()==input[2].toInt()-49){
-                    moveFrom = it[0]
-                }
-            }
-            return Move(moveFrom, this.board.squares[x][y], special)
-
-        }
-        catch(e: StringIndexOutOfBoundsException){
-            return defaultMove
-        }
-    }
-
-    private fun parseCapture(input: String, moves: MutableSet<ArrayList<Square>>): Move{
-        return when {
-            input [1] == 'x' -> capture1(input, moves)
-            input [2] == 'x' -> capture2(input, moves)
-            else             -> capture3(input, moves)
-        }
-    }
-
     private fun parseCastlingShort(moves: MutableSet<ArrayList<Square>>): Move{
         if(moves.first()[0].getColor() == "w") {
             moves.forEach {
@@ -316,50 +337,19 @@ class Game {
         return defaultMove
     }
 
-    fun parseMove(input: String, moves: MutableSet<ArrayList<Square>>): Move{
-
-        return if (input.isNotEmpty())
-            when {
-                input[0] in 'a'..'h' && input[1] !='x' && input != "draw"       -> parsePawnMove(input, moves)
-                input.contains('=')                                             -> parsePromotion(input, moves)
-                input.contains('x')                                             -> parseCapture(input, moves)
-                input[1] in 'a'..'h' && input[2] !in 'a'..'h'                   -> parsePieceMove(input, moves)
-                input.length==4      && input != "draw"                         -> parse4Move(input, moves)
-                input == "O-O"                                                  -> parseCastlingShort(moves)
-                input == "O-O-O"                                                -> parseCastlingLong(moves)
-                else                                                            -> parse5Move(input, moves)
-            }
-        else defaultMove
-    }
-
-    private fun parsePromotion(input: String, moves: MutableSet<java.util.ArrayList<Square>>): Move {
-
+    private fun parse5Move(input: String, moves: MutableSet<ArrayList<Square>>): Move{
         try{
-            if (input.last()=='=') return defaultMove
             var moveFrom = defaultSquare
-            val special = when{
-                input.contains('x') -> "xp"+input.last()
-                else                -> "p"+input.last()
-            }
-            val y = when{
-                input.contains('x') -> input[2].toInt()-97
-                else                -> input[0].toInt()-97
-            }
-            val x= when{
-                input.contains('x') -> input[3].toInt()-49
-                else                -> input[1].toInt()-49
-            }
-            if (special.contains('x')){
+            val y = input[3].toInt()-97
+            val x = input[4].toInt()-49
+            if(!this.board.squares[x][y].hasPiece()) {
                 moves.forEach {
-                    if (it.contains(this.board.squares[x][y]) && it[0].getType()=='P' && it[0].getY() == input[0].toInt()-97 ) moveFrom = it[0]
+                    if (it[0].getType() == input[0] && it[0].getY() == input[1].toInt() - 97 && it[0].getX() == input[2].toInt() - 49) {
+                        moveFrom = it[0]
+                    }
                 }
             }
-            else{
-                moves.forEach {
-                    if (it.contains(this.board.squares[x][y]) && it[0].getType()=='P') moveFrom = it[0]
-                }
-            }
-            return Move(moveFrom, this.board.squares[x][y], special)
+            return Move(moveFrom, this.board.squares[x][y])
         }
         catch(e: StringIndexOutOfBoundsException){
             return defaultMove
@@ -372,5 +362,15 @@ class Game {
 
     fun executePromotion(move: Move) {
         this.board.promotion(move.squareFrom, move.squareTo, move.special!!.last())
+    }
+
+    fun executeEnPassantWhite(move: Move){
+        this.board.basicMove(move.squareFrom, move.squareTo)
+        this.board.squares[move.squareTo.getX()-1][move.squareTo.getY()].emptySquare()
+    }
+
+    fun executeEnPassantBlack(move: Move){
+        this.board.basicMove(move.squareFrom, move.squareTo)
+        this.board.squares[move.squareTo.getX()+1][move.squareTo.getY()].emptySquare()
     }
 }

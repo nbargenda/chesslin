@@ -1,31 +1,5 @@
 import java.lang.NullPointerException
 
-fun mapToASCII(string: String): String{
-    var result = String()
-    val pieceMap = mapOf("bP" to '♟', "wP" to '♙', "bR" to '♜', "wR" to '♖', "bB" to '♝', "wB" to '♗',
-                                                        "bN" to '♞', "wN" to '♘', "bQ" to '♛', "wQ" to '♕', "bK" to '♚', "wK" to '♔')
-    val lines = string.lines()
-    lines.forEach{
-        for (i in 0..14 step 2){
-            if (pieceMap.contains(it.substring(i,i+2))){
-                result += pieceMap[it.substring(i,i+2)] ?:""
-                result += " "
-            }
-            else {
-                result += it.substring(i,i+2)+" "
-            }
-        }
-            result += "\n"
-    }
-
-    return result
-}
-
-fun isValidMove(move: Move): Boolean{
-    return move.squareFrom.getX() in 0..7 && move.squareFrom.getY() in 0..7 &&
-            move.squareTo.getX() in 0..7 && move.squareTo.getY() in 0..7  && move.squareTo != move.squareFrom
-}
-
 fun main() {
 
     val testgame = Game()
@@ -53,11 +27,14 @@ fun main() {
         }
 
         currentPieces.forEach {
-            if (testgame.board.hasMoves(it)) possibleMoves.add(testgame.board.possibleMovesSquare(it))
+            val tempMoves = testgame.board.possibleMovesSquare(it)
+            if (tempMoves.isNotEmpty()) possibleMoves.add(tempMoves)
         }
         otherPieces.forEach {
-            if (testgame.board.hasMoves(it)) otherMoves.add(testgame.board.possibleMovesSquare(it))
+            val tempMoves = testgame.board.possibleMovesSquare(it)
+            if (tempMoves.isNotEmpty()) otherMoves.add(tempMoves)
         }
+
         possibleMoves = testgame.board.removePinnedMoves(possibleMoves, otherMoves)
         possibleMoves = testgame.board.removeKingMovesCheck(possibleMoves, otherPieces)
 
@@ -97,12 +74,12 @@ fun main() {
                                     testgame.board.squares[move.squareTo.getX() - 1][move.squareTo.getY()].piece?.let {
                                         capturedPieces.add(it)
                                     }
-                                    testgame.enPassantWhite(move)
+                                    testgame.executeEnPassantWhite(move)
                                 } else {
                                     testgame.board.squares[move.squareTo.getX() + 1][move.squareTo.getY()].piece?.let {
                                         capturedPieces.add(it)
                                     }
-                                    testgame.enPassantBlack(move)
+                                    testgame.executeEnPassantBlack(move)
                                 }
                             }
                             move.special.contains('s') -> {
@@ -128,7 +105,8 @@ fun main() {
                     possibleMoves.remove(testgame.board.possibleMovesSquare(move.squareFrom))
                     possibleMoves.add(testgame.board.possibleMovesSquare(move.squareTo))
                     otherPieces.forEach {
-                        if (testgame.board.hasMoves(it)) otherMoves.add(testgame.board.possibleMovesSquare(it))
+                        val tempMoves = testgame.board.possibleMovesSquare(it)
+                        if (tempMoves.isNotEmpty()) otherMoves.add(tempMoves)
                     }
                     otherMoves = testgame.board.removeKingMovesCheck(otherMoves, currentPieces)
                     otherMoves = testgame.board.removePinnedMoves(otherMoves, possibleMoves)
@@ -229,4 +207,30 @@ fun checkIfCheck(moves: MutableSet<ArrayList<Square>>, color: String): Boolean{
         }
     }
     return false
+}
+
+fun mapToASCII(string: String): String{
+    var result = String()
+    val pieceMap = mapOf("bP" to '♟', "wP" to '♙', "bR" to '♜', "wR" to '♖', "bB" to '♝', "wB" to '♗',
+        "bN" to '♞', "wN" to '♘', "bQ" to '♛', "wQ" to '♕', "bK" to '♚', "wK" to '♔')
+    val lines = string.lines()
+    lines.forEach{
+        for (i in 0..14 step 2){
+            if (pieceMap.contains(it.substring(i,i+2))){
+                result += pieceMap[it.substring(i,i+2)] ?:""
+                result += " "
+            }
+            else {
+                result += it.substring(i,i+2)+" "
+            }
+        }
+        result += "\n"
+    }
+
+    return result
+}
+
+fun isValidMove(move: Move): Boolean{
+    return move.squareFrom.getX() in 0..7 && move.squareFrom.getY() in 0..7 &&
+            move.squareTo.getX() in 0..7 && move.squareTo.getY() in 0..7  && move.squareTo != move.squareFrom
 }

@@ -4,9 +4,8 @@ import kotlin.math.absoluteValue
 
 class Board{
 
-
     var squares = arrayListOf<ArrayList<Square>>()
-    val moveHistory = arrayListOf<Move>()
+    private val moveHistory = arrayListOf<Move>()
     private val moves = Moves()
 
     init{
@@ -18,8 +17,53 @@ class Board{
         }
     }
 
-    fun hasMoves(square: Square): Boolean{
-         return possibleMoves(square).isNotEmpty()
+    fun removeKingMovesCheck(moves: MutableSet<ArrayList<Square>>, otherPieces: MutableSet<Square>): MutableSet<ArrayList<Square>> {
+        val result = arrayListOf<Square>()
+        val threatenedSquares: MutableSet<Square> = mutableSetOf()
+        otherPieces.forEach {square->
+            threatenedSquares.addAll(threatenedSquares(square))
+        }
+        val nonEmptyThreatenedSquares: MutableSet<Square> = mutableSetOf()
+        threatenedSquares.forEach {
+            if (it.hasPiece()) nonEmptyThreatenedSquares.add(it)
+        }
+        threatenedSquares.removeAll(nonEmptyThreatenedSquares)
+
+        var kingMoves = arrayListOf<Square>()
+        moves.forEach {
+            if (it[0].getType() == 'K') kingMoves = it
+        }
+        kingMoves.forEach{
+            if (it in threatenedSquares && it.getType()!='K') result.add(it)
+            if (kingMoves[0].getColor() == "w"){
+                if(it.getX()<6){
+                    if((it.getY()<7 && this.squares[it.getX()+1][it.getY()+1].getType()=='P' && this.squares[it.getX()+1][it.getY()+1].getColor()=="b")||
+                        (it.getY()>0 && this.squares[it.getX()+1][it.getY()-1].getType()=='P'&& this.squares[it.getX()+1][it.getY()-1].getColor()=="b"))
+                        result.add(it)
+                }
+            }
+            else{
+                if(it.getX()>1){
+                    if((it.getY()<7 && this.squares[it.getX()-1][it.getY()+1].getType()=='P' && this.squares[it.getX()-1][it.getY()+1].getColor()=="w")||
+                        (it.getY()>0 && this.squares[it.getX()-1][it.getY()-1].getType()=='P' && this.squares[it.getX()-1][it.getY()-1].getColor()=="w"))
+                        result.add(it)
+                }
+            }
+        }
+
+        moves.remove(kingMoves)
+        kingMoves.removeAll(result)
+        moves.add(kingMoves)
+        return removeEmptyMoves(moves)
+    }
+
+    fun removeEmptyMoves(moves: MutableSet<ArrayList<Square>>): MutableSet<ArrayList<Square>> {
+        val result = mutableSetOf<ArrayList<Square>>()
+        moves.forEach {
+            if (it.size <= 1 || !it[0].hasPiece()) result.add(it)
+        }
+        moves.removeAll(result)
+        return moves
     }
 
     fun removePinnedMoves(possibleMoves: MutableSet<ArrayList<Square>>, otherMoves: MutableSet<ArrayList<Square>>): MutableSet<ArrayList<Square>> {
@@ -36,18 +80,14 @@ class Board{
         return possibleMoves
     }
 
-    fun possibleMovesSquare(square: Square): ArrayList<Square>{
-        val result = arrayListOf(square)
-        result.addAll(possibleMoves(square))
-        return result
-    }
-
-    private fun findKing(color: String?): Square{
-        val pieces = getPieces()
-        pieces.forEach {
-            if (it.getType() == 'K' && it.getColor() == color) return it
+    private fun removeInvalidMoves(squares: MutableSet<List<Int>>): MutableSet<Square>{
+        val result = mutableSetOf<Square>()
+        squares.forEach {
+            if (it[0] in 0..7 && it[1] in 0..7) {
+                result.add(this.squares[it[0]][it[1]])
+            }
         }
-        return defaultSquare
+        return result
     }
 
 /*         |    |
@@ -232,7 +272,7 @@ class Board{
         val threatenedSquares = mutableSetOf<Square>()
         // find out if 1 or 2 threats
         // if 1 = can kill/block threat IF NOT PINNED
-        // if 2+ = only king can move, OR maybe block?
+        // if 2+ = only king can move
         otherMoves.forEach {
             if (it.contains(king)) {
                 threats++
@@ -276,6 +316,12 @@ class Board{
         return result
     }
 
+    fun possibleMovesSquare(square: Square): ArrayList<Square>{
+        val result = arrayListOf(square)
+        result.addAll(possibleMoves(square))
+        return result
+    }
+
     private fun possibleMoves(square: Square): MutableSet<Square>{
         val result = mutableSetOf<Square>()
         if (square.getType()=='P'){
@@ -311,17 +357,6 @@ class Board{
             }
         return result
     }
-
-    private fun removeInvalidMoves(squares: MutableSet<List<Int>>): MutableSet<Square>{
-        val result = mutableSetOf<Square>()
-        squares.forEach {
-            if (it[0] in 0..7 && it[1] in 0..7) {
-                result.add(this.squares[it[0]][it[1]])
-            }
-        }
-        return result
-    }
-
 
     fun defendedThreatenedSquares(square: Square): ArrayList<Set<Square>>{
         val color = square.getColor()
@@ -438,6 +473,15 @@ class Board{
         }
     }
 
+    private fun checkBlock(squares: MutableSet<Square>): MutableSet<List<Int>> {
+        val result = mutableSetOf<List<Int>>()
+        squares.forEach {
+            result.add(listOf(it.getX(),it.getY()))
+            if (this.squares[it.getX()][it.getY()].hasPiece()) return result
+        }
+        return result
+    }
+
     private fun threatenedSquaresPawn(square: Square): MutableSet<Square>{
         var lastMove = defaultMove
         val result = mutableSetOf<Square>()
@@ -459,15 +503,6 @@ class Board{
                 result.add(this.squares[square.getX()-1][square.getY()+1])
         }
 
-        return result
-    }
-
-    private fun checkBlock(squares: MutableSet<Square>): MutableSet<List<Int>> {
-        val result = mutableSetOf<List<Int>>()
-        squares.forEach {
-            result.add(listOf(it.getX(),it.getY()))
-            if (this.squares[it.getX()][it.getY()].hasPiece()) return result
-        }
         return result
     }
 
@@ -519,6 +554,14 @@ class Board{
             possibleSquares.add(listOf(square.getX()+it[0],square.getY()+it[1]))
         }
         return removeInvalidMoves(possibleSquares)
+    }
+
+    private fun findKing(color: String?): Square{
+        val pieces = getPieces()
+        pieces.forEach {
+            if (it.getType() == 'K' && it.getColor() == color) return it
+        }
+        return defaultSquare
     }
 
     fun getPieces(): MutableSet<Square>{
@@ -595,55 +638,6 @@ class Board{
         this.squares[rank][3].piece!!.hasMoved = true
         this.squares[rank][4].emptySquare()
         this.squares[rank][0].emptySquare()
-    }
-
-    fun removeKingMovesCheck(moves: MutableSet<ArrayList<Square>>, otherPieces: MutableSet<Square>): MutableSet<ArrayList<Square>> {
-        val result = arrayListOf<Square>()
-        val threatenedSquares: MutableSet<Square> = mutableSetOf()
-        otherPieces.forEach {square->
-            threatenedSquares.addAll(threatenedSquares(square))
-        }
-        val nonEmptyThreatenedSquares: MutableSet<Square> = mutableSetOf()
-        threatenedSquares.forEach {
-            if (it.hasPiece()) nonEmptyThreatenedSquares.add(it)
-        }
-        threatenedSquares.removeAll(nonEmptyThreatenedSquares)
-
-        var kingMoves = arrayListOf<Square>()
-        moves.forEach {
-            if (it[0].getType() == 'K') kingMoves = it
-        }
-        kingMoves.forEach{
-            if (it in threatenedSquares && it.getType()!='K') result.add(it)
-            if (kingMoves[0].getColor() == "w"){
-                if(it.getX()<6){
-                    if((it.getY()<7 && this.squares[it.getX()+1][it.getY()+1].getType()=='P' && this.squares[it.getX()+1][it.getY()+1].getColor()=="b")||
-                        (it.getY()>0 && this.squares[it.getX()+1][it.getY()-1].getType()=='P'&& this.squares[it.getX()+1][it.getY()-1].getColor()=="b"))
-                        result.add(it)
-                }
-            }
-            else{
-                if(it.getX()>1){
-                    if((it.getY()<7 && this.squares[it.getX()-1][it.getY()+1].getType()=='P' && this.squares[it.getX()-1][it.getY()+1].getColor()=="w")||
-                        (it.getY()>0 && this.squares[it.getX()-1][it.getY()-1].getType()=='P' && this.squares[it.getX()-1][it.getY()-1].getColor()=="w"))
-                        result.add(it)
-                }
-            }
-        }
-
-        moves.remove(kingMoves)
-        kingMoves.removeAll(result)
-        moves.add(kingMoves)
-        return removeEmptyMoves(moves)
-    }
-
-    fun removeEmptyMoves(moves: MutableSet<ArrayList<Square>>): MutableSet<ArrayList<Square>> {
-        val result = mutableSetOf<ArrayList<Square>>()
-        moves.forEach {
-            if (it.size <= 1 || !it[0].hasPiece()) result.add(it)
-        }
-        moves.removeAll(result)
-        return moves
     }
 
     fun promotion(squareFrom: Square, squareTo: Square, type: Char) {

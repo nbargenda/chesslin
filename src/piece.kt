@@ -4,5 +4,4 @@ class Piece(private val color: Boolean, var type: Char, var hasMoved: Boolean = 
     fun getColor(): String{
         return if (this.color) "w" else "b"
     }
-
 }
