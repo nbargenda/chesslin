@@ -31,7 +31,7 @@ class Board {
                     if (square.getType()=='K' && square.getColor() !=it[0].getColor()) checkingPiece.add(it[0])
                 }
                 else {
-                    if(square != it[0])threatenedSquares.add(square)
+                    if(square != it[0] && it[0].getType() != 'P')threatenedSquares.add(square)
                 }
             }
         }
@@ -45,15 +45,13 @@ class Board {
             if (kingMoves[0].getColor() == "w") {
                 if (it.rank < 6) {
                     if ((it.column < 7 && this.squares[it.rank + 1][it.column + 1].getType() == 'P' && this.squares[it.rank + 1][it.column + 1].getColor() == "b" && it != kingMoves[0]) ||
-                        (it.column > 0 && this.squares[it.rank + 1][it.column - 1].getType() == 'P' && this.squares[it.rank + 1][it.column - 1].getColor() == "b" && it != kingMoves[0])
-                    )
+                        (it.column > 0 && this.squares[it.rank + 1][it.column - 1].getType() == 'P' && this.squares[it.rank + 1][it.column - 1].getColor() == "b" && it != kingMoves[0]))
                         result.add(it)
                 }
             } else {
                 if (it.rank > 1) {
                     if ((it.column < 7 && this.squares[it.rank - 1][it.column + 1].getType() == 'P' && this.squares[it.rank - 1][it.column + 1].getColor() == "w" && it != kingMoves[0]) ||
-                        (it.column > 0 && this.squares[it.rank - 1][it.column - 1].getType() == 'P' && this.squares[it.rank - 1][it.column - 1].getColor() == "w" && it != kingMoves[0])
-                    )
+                        (it.column > 0 && this.squares[it.rank - 1][it.column - 1].getType() == 'P' && this.squares[it.rank - 1][it.column - 1].getColor() == "w" && it != kingMoves[0]))
                         result.add(it)
                 }
             }
@@ -69,7 +67,7 @@ class Board {
     private fun threateningPieceOnSameColumnRankDiagonal(square: Square, checkingPieces: MutableSet<Square>): Boolean {
         checkingPieces.forEach {
             if (it.getType() == 'R' || it.getType() == 'Q'){
-                if (it != square && (it.column == square.column || it.rank == square.column)) return true
+                if (it != square && (it.column == square.column || it.rank == square.rank)) return true
             }
             if (it.getType() == 'B' || it.getType() == 'Q'){
                 if(it != square && ((it.column-square.column).absoluteValue == (it.rank-square.rank).absoluteValue)) return true  // col 2 rank 5   col 5 rank 7
@@ -98,7 +96,7 @@ class Board {
             val pinningPiece = isPinned(it[0], otherMoves)
             if (pinningPiece.hasPiece()) {
                 it.forEach { square ->
-                    if (square == pinningPiece){
+                    if (square == pinningPiece || (threateningPieceOnSameColumnRankDiagonal(square, mutableSetOf<Square>(pinningPiece)))){
                         tempMoves.add(it[0])
                         tempMoves.add(square)
                     } // BUG: if square == pinningPiece at some point, still gets removed  result needs to be removed from it
@@ -312,15 +310,23 @@ class Board {
         } else {
             moves.forEach {
                 when (it[0].getType()) {
-                    'K' -> if (!threatenedSquares.contains(it[1])) result.add(it)
+                    'K' -> {
+                        val tempSquares = arrayListOf<Square>()
+                        it.forEach {square->
+                            if (square != it[0] && square !in threatenedSquares) {
+                                if (it[0] !in tempSquares) tempSquares.add(it[0])
+                                tempSquares.add(square)
+                            }
+                        }
+                        result.add(tempSquares)
+                    }
                     else -> {
                         if (!isPinned(it[0], otherMoves).hasPiece()) {
                             checkSquares.forEach { checkSquare ->
                                 when (checkSquare.getType()) {
                                     'P', 'N' -> {
                                         it.forEach { square ->
-                                            if (square != it[0] && square == checkSquare) result.add(
-                                                arrayListOf(it[0], square))
+                                            if (square != it[0] && square == checkSquare) result.add(arrayListOf(it[0], square))
                                         }
                                     }
                                     'Q', 'B', 'R' -> {

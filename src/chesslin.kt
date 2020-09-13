@@ -32,16 +32,19 @@ fun main(args: Array<String>) {
             currentPieces = testgame.board.getBlackPieces(pieces)
             otherPieces = testgame.board.getWhitePieces(pieces)
         }
-
+        possibleMoves.clear()
         currentPieces.forEach {
             val tempMoves = testgame.board.possibleMovesSquare(it)
             if (tempMoves.isNotEmpty()) possibleMoves.add(tempMoves)
         }
-
+        otherMoves.clear()
         otherPieces.forEach {
             val tempMoves = testgame.board.possibleMovesSquare(it)
             if (tempMoves.isNotEmpty()) otherMoves.add(tempMoves)
         }
+
+        otherMoves = testgame.board.removePinnedMoves(otherMoves, possibleMoves)
+        otherMoves = testgame.board.removeKingMovesCheck(otherMoves, currentPieces, possibleMoves)
 
         possibleMoves = testgame.board.removePinnedMoves(possibleMoves, otherMoves)
         possibleMoves = testgame.board.removeKingMovesCheck(possibleMoves, otherPieces, otherMoves)
@@ -103,9 +106,10 @@ fun main(args: Array<String>) {
                     } else {
                         testgame.executeMove(move)
                     }
-
+                    pieces.clear()
+                    currentPieces.clear()
+                    otherPieces.clear()
                     pieces = testgame.board.getPieces()
-                    otherMoves = mutableSetOf()
 
                     if (currentState.value[0] == 'w') {
                         currentPieces = testgame.board.getWhitePieces(pieces)
@@ -114,12 +118,12 @@ fun main(args: Array<String>) {
                         currentPieces = testgame.board.getBlackPieces(pieces)
                         otherPieces = testgame.board.getWhitePieces(pieces)
                     }
-
+                    otherMoves.clear()
                     otherPieces.forEach {
                         val tempMoves = testgame.board.possibleMovesSquare(it)
                         if (tempMoves.isNotEmpty()) otherMoves.add(tempMoves)
                     }
-
+                    possibleMoves.clear()
                     currentPieces.forEach {
                         val tempMoves = testgame.board.possibleMovesSquare(it)
                         if (tempMoves.isNotEmpty()) possibleMoves.add(tempMoves)
@@ -129,8 +133,6 @@ fun main(args: Array<String>) {
 
                     otherMoves = testgame.board.removePinnedMoves(otherMoves, possibleMoves)
                     otherMoves = testgame.board.removeKingMovesCheck(otherMoves, currentPieces, possibleMoves)
-
-
 
                     if (checkIfCheck(possibleMoves, currentState.value[0].toString())) {
                         otherMoves = testgame.board.possibleMovesCheck(otherMoves, testgame.board.removeEmptyMoves(possibleMoves))
