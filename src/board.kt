@@ -18,17 +18,23 @@ class Board {
     }
 
     // if King could move on a threatened square, remove it.
-    fun removeKingMovesCheck(moves: MutableSet<ArrayList<Square>>, otherPieces: MutableSet<Square>): MutableSet<ArrayList<Square>> {
+    fun removeKingMovesCheck(moves: MutableSet<ArrayList<Square>>, otherPieces: MutableSet<Square>, otherMoves: MutableSet<ArrayList<Square>> ): MutableSet<ArrayList<Square>> {
+        // removes like, a lot
+
         val result = arrayListOf<Square>()
-        val threatenedSquares: MutableSet<Square> = mutableSetOf()
-        otherPieces.forEach { square ->
-            threatenedSquares.addAll(threatenedSquares(square))
+        val threatenedSquares = mutableSetOf<Square>()
+        val checkingPiece = mutableSetOf<Square>()
+
+        otherMoves.forEach {
+            it.forEach { square->
+                if (square != it[0] && square.hasPiece()){
+                    if (square.getType()=='K' && square.getColor() !=it[0].getColor()) checkingPiece.add(it[0])
+                }
+                else {
+                    if(square != it[0])threatenedSquares.add(square)
+                }
+            }
         }
-        val nonEmptyThreatenedSquares: MutableSet<Square> = mutableSetOf()
-        threatenedSquares.forEach {
-            if (it.hasPiece()) nonEmptyThreatenedSquares.add(it)
-        }
-        threatenedSquares.removeAll(nonEmptyThreatenedSquares)
 
         var kingMoves = arrayListOf<Square>()
         moves.forEach {
@@ -38,19 +44,20 @@ class Board {
             if (it in threatenedSquares && it.getType() != 'K') result.add(it)
             if (kingMoves[0].getColor() == "w") {
                 if (it.rank < 6) {
-                    if ((it.column < 7 && this.squares[it.rank + 1][it.column + 1].getType() == 'P' && this.squares[it.rank + 1][it.column + 1].getColor() == "b") ||
-                        (it.column > 0 && this.squares[it.rank + 1][it.column - 1].getType() == 'P' && this.squares[it.rank + 1][it.column - 1].getColor() == "b")
+                    if ((it.column < 7 && this.squares[it.rank + 1][it.column + 1].getType() == 'P' && this.squares[it.rank + 1][it.column + 1].getColor() == "b" && it != kingMoves[0]) ||
+                        (it.column > 0 && this.squares[it.rank + 1][it.column - 1].getType() == 'P' && this.squares[it.rank + 1][it.column - 1].getColor() == "b" && it != kingMoves[0])
                     )
                         result.add(it)
                 }
             } else {
                 if (it.rank > 1) {
-                    if ((it.column < 7 && this.squares[it.rank - 1][it.column + 1].getType() == 'P' && this.squares[it.rank - 1][it.column + 1].getColor() == "w") ||
-                        (it.column > 0 && this.squares[it.rank - 1][it.column - 1].getType() == 'P' && this.squares[it.rank - 1][it.column - 1].getColor() == "w")
+                    if ((it.column < 7 && this.squares[it.rank - 1][it.column + 1].getType() == 'P' && this.squares[it.rank - 1][it.column + 1].getColor() == "w" && it != kingMoves[0]) ||
+                        (it.column > 0 && this.squares[it.rank - 1][it.column - 1].getType() == 'P' && this.squares[it.rank - 1][it.column - 1].getColor() == "w" && it != kingMoves[0])
                     )
                         result.add(it)
                 }
             }
+            if (threateningPieceOnSameColumnRankDiagonal(it, checkingPiece) && it.getType() != 'K') result.add(it)
         }
 
         moves.remove(kingMoves)
@@ -59,29 +66,50 @@ class Board {
         return removeEmptyMoves(moves)
     }
 
+    private fun threateningPieceOnSameColumnRankDiagonal(square: Square, checkingPieces: MutableSet<Square>): Boolean {
+        checkingPieces.forEach {
+            if (it.getType() == 'R' || it.getType() == 'Q'){
+                if (it != square && (it.column == square.column || it.rank == square.column)) return true
+            }
+            if (it.getType() == 'B' || it.getType() == 'Q'){
+                if(it != square && ((it.column-square.column).absoluteValue == (it.rank-square.rank).absoluteValue)) return true  // col 2 rank 5   col 5 rank 7
+            }
+        }
+        return false
+    }
+
     // possibleMoves returns squares with the first square with the piece which moves, therefore it's necessary to remove empty moves sometimes
     fun removeEmptyMoves(moves: MutableSet<ArrayList<Square>>): MutableSet<ArrayList<Square>> {
         val result = mutableSetOf<ArrayList<Square>>()
         moves.forEach {
-            if (it.size <= 1 || !it[0].hasPiece()) result.add(it)
+            if (it.size > 1 && it[0].hasPiece()) result.add(it)
         }
-        moves.removeAll(result)
+        moves.clear()
+        moves.addAll(result)
         return moves
     }
 
     fun removePinnedMoves(possibleMoves: MutableSet<ArrayList<Square>>, otherMoves: MutableSet<ArrayList<Square>>): MutableSet<ArrayList<Square>> {
-        val result = mutableSetOf<ArrayList<Square>>()
+
+        // removes CASTLING?!
+        val tempMoves = arrayListOf<Square>()
+        val tempPossibleMoves = mutableSetOf<ArrayList<Square>>()
         possibleMoves.forEach {
             val pinningPiece = isPinned(it[0], otherMoves)
             if (pinningPiece.hasPiece()) {
                 it.forEach { square ->
-                    if (square != pinningPiece) result.add(it) // BUG: if square == pinningPiece at some point, still gets removed
+                    if (square == pinningPiece){
+                        tempMoves.add(it[0])
+                        tempMoves.add(square)
+                    } // BUG: if square == pinningPiece at some point, still gets removed  result needs to be removed from it
                 }
+                tempPossibleMoves.add(tempMoves)
+            }
+            else{
+                tempPossibleMoves.add(it)
             }
         }
-
-        possibleMoves.removeAll(result)
-        return possibleMoves
+        return removeEmptyMoves(tempPossibleMoves)
     }
 
     private fun removeInvalidMoves(squares: MutableSet<List<Int>>): MutableSet<Square> {
