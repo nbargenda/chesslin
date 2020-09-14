@@ -46,6 +46,53 @@ class Game {
         this.board.squares[7][4].piece = kingB
     }
 
+    var currentMoves = mutableSetOf<ArrayList<Square>>()
+    var pieces = mutableSetOf<Square>()
+    var currentPieces: MutableSet<Square> = mutableSetOf()
+    var otherPieces: MutableSet<Square>   = mutableSetOf()
+    var otherMoves: MutableSet<ArrayList<Square>> = mutableSetOf()
+
+    fun updateMoves(currentColor: Char){
+        pieces.clear()
+        currentPieces.clear()
+        otherPieces.clear()
+        currentMoves.clear()
+        otherMoves.clear()
+        pieces = board.getPieces()
+
+        if(currentColor == 'w'){
+            currentPieces = board.getWhitePieces(pieces)
+            otherPieces = board.getBlackPieces(pieces)
+        }
+        else{
+            currentPieces = board.getBlackPieces(pieces)
+            otherPieces = board.getWhitePieces(pieces)
+        }
+
+        currentPieces.forEach {
+            val tempMoves = board.possibleMovesSquare(it)
+            if (tempMoves.isNotEmpty()) currentMoves.add(tempMoves)
+        }
+        otherPieces.forEach {
+            val tempMoves = board.possibleMovesSquare(it)
+            if (tempMoves.isNotEmpty()) otherMoves.add(tempMoves)
+        }
+        if (currentColor == 'b'){
+            otherMoves = board.removePinnedMoves(otherMoves, currentMoves)
+            otherMoves = board.removeKingMovesCheck(otherMoves, currentMoves)
+
+            currentMoves = board.removePinnedMoves(currentMoves, otherMoves)
+            currentMoves = board.removeKingMovesCheck(currentMoves, otherMoves)
+        }
+        else{
+            currentMoves = board.removePinnedMoves(currentMoves, otherMoves)
+            currentMoves = board.removeKingMovesCheck(currentMoves, otherMoves)
+
+            otherMoves = board.removePinnedMoves(otherMoves, currentMoves)
+            otherMoves = board.removeKingMovesCheck(otherMoves, currentMoves)
+        }
+    }
+
     private val a0 = Input("move")
     private val a1 = Input("check")
     private val a2 = Input("checkmate")
@@ -109,8 +156,8 @@ class Game {
 
         return if (input.isNotEmpty())
             when {
-                input[0] in 'a'..'h' && input[1] != 'x' && input != "draw" -> parsePawnMove(input, moves)
                 input.contains('=')                                        -> parsePromotion(input, moves)
+                input[0] in 'a'..'h' && input[1] != 'x' && input != "draw" -> parsePawnMove(input, moves)
                 input.contains('x')                                        -> parseCapture(input, moves)
                 input[1] in 'a'..'h' && input[2] !in 'a'..'h'              -> parsePieceMove(input, moves)
                 input[1] in (1..8).toString()                              -> parsePieceMoveSameColumn(input, moves) // capture?
@@ -174,8 +221,7 @@ class Game {
             }
             if (special.contains('x')) {
                 moves.forEach {
-                    if (it.contains(this.board.squares[x][y]) && it[0].getType() == 'P' && it[0].column == input[0].toInt() - 97) moveFrom =
-                        it[0]
+                    if (it.contains(this.board.squares[x][y]) && it[0].getType() == 'P' && it[0].column == input[0].toInt() - 97) moveFrom = it[0]
                 }
             } else {
                 moves.forEach {
@@ -286,17 +332,11 @@ class Game {
             var moveFrom = defaultSquare
             val y = input[1].toInt() - 97
             val x = input[2].toInt() - 49
-            var bool = false
             if (!this.board.squares[x][y].hasPiece()) {
                 moves.forEach {
                     if (it[0].getType() == input[0]) {
                         if (it.contains(this.board.squares[x][y])) {
                             moveFrom = it[0]
-
-                            if (bool) {
-                                moveFrom = defaultSquare
-                            }
-                            bool = true
                         }
                     }
                 }

@@ -19,7 +19,6 @@ class Board {
 
     // if King could move on a threatened square, remove it.
     fun removeKingMovesCheck(moves: MutableSet<ArrayList<Square>>, otherMoves: MutableSet<ArrayList<Square>> ): MutableSet<ArrayList<Square>> {
-        // removes like, a lot
 
         val result = arrayListOf<Square>()
         val threatenedSquares = mutableSetOf<Square>()
@@ -31,10 +30,17 @@ class Board {
                     if (square.getType()=='K' && square.getColor() !=it[0].getColor()) checkingPiece.add(it[0])
                 }
                 else {
-                    if(square != it[0] && it[0].getType() != 'P')threatenedSquares.add(square)
+                    if(square != it[0] && it[0].getType() != 'P'){
+                        if(it[0].getType() != 'K') threatenedSquares.add(square)
+
+                    }
                 }
             }
+            if(it[0].getType()=='K'){
+                threatenedSquares.addAll(threatenedSquares(it[0]))
+            }
         }
+
 
         var kingMoves = arrayListOf<Square>()
         moves.forEach {
