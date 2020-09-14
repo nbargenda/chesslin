@@ -113,12 +113,28 @@ class Game {
                 input.contains('=')                                        -> parsePromotion(input, moves)
                 input.contains('x')                                        -> parseCapture(input, moves)
                 input[1] in 'a'..'h' && input[2] !in 'a'..'h'              -> parsePieceMove(input, moves)
+                input[1] in (1..8).toString()                              -> parsePieceMoveSameColumn(input, moves) // capture?
                 input.length == 4 && input != "draw"                       -> parse4Move(input, moves)
                 input == "O-O"                                             -> parseCastlingShort(moves)
                 input == "O-O-O"                                           -> parseCastlingLong(moves)
                 else                                                       -> parse5Move(input, moves)
             }
         else defaultMove
+    }
+
+    private fun parsePieceMoveSameColumn(input: String, moves: MutableSet<java.util.ArrayList<Square>>): Move {
+        return try{
+            var moveFrom = defaultSquare
+            val y = input[2].toInt()-97
+            val x = input[3].toInt()-49
+            moves.forEach {
+                if (it.contains(this.board.squares[x][y]) && it[0].getType() == input[0] && it[0].rank == input[1].toInt()-49) moveFrom = it[0]
+            }
+            Move(moveFrom, this.board.squares[x][y])
+        } catch (e: StringIndexOutOfBoundsException) {
+            defaultMove
+        }
+
     }
 
     private fun parsePawnMove(input: String, moves: MutableSet<ArrayList<Square>>): Move {
@@ -175,8 +191,23 @@ class Game {
     private fun parseCapture(input: String, moves: MutableSet<ArrayList<Square>>): Move {
         return when {
             input[1] == 'x' -> capture1(input, moves)
-            input[2] == 'x' -> capture2(input, moves)
+            input[2] == 'x' && input[1] !in (1..8).toString()      -> capture2(input, moves)
+            input[2] == 'x' && input[1] in (1..8).toString()       -> captureSameColumn(input, moves)
             else -> capture3(input, moves)
+        }
+    }
+
+    private fun captureSameColumn(input: String, moves: MutableSet<ArrayList<Square>>): Move {
+        return try{
+            var moveFrom = defaultSquare
+            val y = input[3].toInt()-97
+            val x = input[4].toInt()-49
+            moves.forEach {
+                if (it.contains(this.board.squares[x][y]) && it[0].getType() == input[0] && it[0].rank == input[1].toInt()-49) moveFrom = it[0]
+            }
+            Move(moveFrom, this.board.squares[x][y], "x")
+        } catch (e: StringIndexOutOfBoundsException) {
+            defaultMove
         }
     }
 

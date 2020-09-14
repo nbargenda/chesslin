@@ -44,10 +44,10 @@ fun main(args: Array<String>) {
         }
 
         otherMoves = testgame.board.removePinnedMoves(otherMoves, possibleMoves)
-        otherMoves = testgame.board.removeKingMovesCheck(otherMoves, currentPieces, possibleMoves)
+        otherMoves = testgame.board.removeKingMovesCheck(otherMoves, possibleMoves)
 
         possibleMoves = testgame.board.removePinnedMoves(possibleMoves, otherMoves)
-        possibleMoves = testgame.board.removeKingMovesCheck(possibleMoves, otherPieces, otherMoves)
+        possibleMoves = testgame.board.removeKingMovesCheck(possibleMoves, otherMoves)
 
 
         if ("Check" in currentState.value) {
@@ -129,10 +129,10 @@ fun main(args: Array<String>) {
                         if (tempMoves.isNotEmpty()) possibleMoves.add(tempMoves)
                     }
                     possibleMoves = testgame.board.removePinnedMoves(possibleMoves, otherMoves)
-                    possibleMoves = testgame.board.removeKingMovesCheck(possibleMoves, otherPieces, otherMoves)
+                    possibleMoves = testgame.board.removeKingMovesCheck(possibleMoves, otherMoves)
 
                     otherMoves = testgame.board.removePinnedMoves(otherMoves, possibleMoves)
-                    otherMoves = testgame.board.removeKingMovesCheck(otherMoves, currentPieces, possibleMoves)
+                    otherMoves = testgame.board.removeKingMovesCheck(otherMoves, possibleMoves)
 
                     if (checkIfCheck(possibleMoves, currentState.value[0].toString())) {
                         otherMoves = testgame.board.possibleMovesCheck(otherMoves, testgame.board.removeEmptyMoves(possibleMoves))

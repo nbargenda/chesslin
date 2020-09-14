@@ -18,7 +18,7 @@ class Board {
     }
 
     // if King could move on a threatened square, remove it.
-    fun removeKingMovesCheck(moves: MutableSet<ArrayList<Square>>, otherPieces: MutableSet<Square>, otherMoves: MutableSet<ArrayList<Square>> ): MutableSet<ArrayList<Square>> {
+    fun removeKingMovesCheck(moves: MutableSet<ArrayList<Square>>, otherMoves: MutableSet<ArrayList<Square>> ): MutableSet<ArrayList<Square>> {
         // removes like, a lot
 
         val result = arrayListOf<Square>()
@@ -64,13 +64,24 @@ class Board {
         return removeEmptyMoves(moves)
     }
 
-    private fun threateningPieceOnSameColumnRankDiagonal(square: Square, checkingPieces: MutableSet<Square>): Boolean {
+    private fun threateningPieceOnSameColumnRankDiagonal(square: Square, checkingPieces: MutableSet<Square>, kingSquare: Square = defaultSquare): Boolean {
         checkingPieces.forEach {
             if (it.getType() == 'R' || it.getType() == 'Q'){
-                if (it != square && (it.column == square.column || it.rank == square.rank)) return true
+                if(kingSquare == defaultSquare){
+                    if (it != square && (it.column == square.column || it.rank == square.rank)) return true
+                }
+                else{
+                    if (it != square && (it.column == square.column || it.rank == square.rank) && (kingSquare.rank == square.rank || kingSquare.column == square.column)) return true
+                }
             }
             if (it.getType() == 'B' || it.getType() == 'Q'){
-                if(it != square && ((it.column-square.column).absoluteValue == (it.rank-square.rank).absoluteValue)) return true  // col 2 rank 5   col 5 rank 7
+                if(kingSquare == defaultSquare){
+                    if(it != square && ((it.column-square.column).absoluteValue == (it.rank-square.rank).absoluteValue)) return true  // col 2 rank 5   col 5 rank 7
+                }
+                else{
+                    if(it != square && ((it.column-square.column).absoluteValue == (it.rank-square.rank).absoluteValue) &&
+                        (kingSquare.rank == square.rank || kingSquare.column == square.column)) return true
+                }
             }
         }
         return false
@@ -342,7 +353,7 @@ class Board {
             }
         }
 
-        return result
+        return removeEmptyMoves(result)
     }
 
     // returns all possible moves
@@ -369,15 +380,13 @@ class Board {
 
         }
         if (square.getType() == 'K' && !square.getHasMoved()!!) {
-            when {
-                checkCastlingShort(square) -> {
-                    if (square.getColor() == "w") result.add(this.squares[0][6])
-                    else result.add(this.squares[7][6])
-                }
-                checkCastlingLong(square) -> {
-                    if (square.getColor() == "w") result.add(this.squares[0][2])
-                    else result.add(this.squares[7][2])
-                }
+            if(checkCastlingShort(square)) {
+                if (square.getColor() == "w") result.add(this.squares[0][6])
+                else result.add(this.squares[7][6])
+            }
+            if(checkCastlingLong(square)) {
+                if (square.getColor() == "w") result.add(this.squares[0][2])
+                else result.add(this.squares[7][2])
             }
         }
         val threatenedSquares = threatenedSquares(square)
