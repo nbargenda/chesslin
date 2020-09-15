@@ -36,7 +36,11 @@ fun main(args: Array<String>) {
             println(input)
 
             val move: Move = testgame.parseMove(input ?: "", testgame.currentMoves)
-            history.turnHistory.add(Turn(turn, currentState.value[0], testgame.board.squares, testgame.currentMoves, Move(move.squareFrom, move.squareTo, move.special), input ?: ""))
+            val allMoves = mutableSetOf<ArrayList<Square>>()
+            allMoves.addAll(testgame.currentMoves)
+            allMoves.addAll(testgame.otherMoves)
+            history.turnHistory.add(Turn(turn, currentState.value[0], testgame.board.squares, allMoves, Move(move.squareFrom, move.squareTo, move.special), input ?: ""))
+            allMoves.clear()
 
             if (isValidMove(move)) {
                 turn++
@@ -81,7 +85,7 @@ fun main(args: Array<String>) {
                     if(currentState.value[0]=='w') testgame.updateMoves('b')
                     else testgame.updateMoves('w')
 
-                    if (checkIfCheck(testgame.currentMoves, currentState.value[0].toString())) {
+                    if (checkIfCheck(testgame.otherMoves, currentState.value[0].toString())) {
                         testgame.currentMoves = testgame.board.possibleMovesCheck(testgame.currentMoves, testgame.board.removeEmptyMoves(testgame.otherMoves))
                     }
 
@@ -155,7 +159,9 @@ fun checkRepetition(history: History, limit: Int): Boolean {
         whiteTurns.forEach { turn2 ->
             if (turn1.moves == turn2.moves) {
                 count++
-                if (count >= limit) return true
+                if (count >= limit){
+                    return true
+                }
             }
         }
         count = 0
@@ -165,7 +171,9 @@ fun checkRepetition(history: History, limit: Int): Boolean {
         blackTurns.forEach { turn2 ->
             if (turn1.moves == turn2.moves) {
                 count++
-                if (count >= limit) return true
+                if (count >= limit) {
+                    return true
+                }
             }
         }
         count = 0
