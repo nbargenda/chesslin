@@ -160,7 +160,7 @@ class Game {
                 input[0] in 'a'..'h' && input[1] != 'x' && input != "draw" -> parsePawnMove(input, moves)
                 input.contains('x')                                        -> parseCapture(input, moves)
                 input[1] in 'a'..'h' && input[2] !in 'a'..'h'              -> parsePieceMove(input, moves)
-                input[1] in (1..8).toString()                              -> parsePieceMoveSameColumn(input, moves) // capture?
+                input[1] in "12345678"                                     -> parsePieceMoveSameColumn(input, moves) // capture?
                 input.length == 4 && input != "draw"                       -> parse4Move(input, moves)
                 input == "O-O"                                             -> parseCastlingShort(moves)
                 input == "O-O-O"                                           -> parseCastlingLong(moves)
