@@ -77,20 +77,13 @@ class Game {
             val tempMoves = board.possibleMovesSquare(it)
             if (tempMoves.isNotEmpty()) otherMoves.add(tempMoves)
         }
-        if (currentColor == 'b'){
-            otherMoves = board.removePinnedMoves(otherMoves, currentMoves)
-            otherMoves = board.removeKingMovesCheck(otherMoves, currentMoves)
 
-            currentMoves = board.removePinnedMoves(currentMoves, otherMoves)
-            currentMoves = board.removeKingMovesCheck(currentMoves, otherMoves)
-        }
-        else{
-            currentMoves = board.removePinnedMoves(currentMoves, otherMoves)
-            currentMoves = board.removeKingMovesCheck(currentMoves, otherMoves)
+        currentMoves = board.removePinnedMoves(currentMoves, otherMoves)
+        currentMoves = board.removeKingMovesCheck(currentMoves, otherMoves)
 
-            otherMoves = board.removePinnedMoves(otherMoves, currentMoves)
-            otherMoves = board.removeKingMovesCheck(otherMoves, currentMoves)
-        }
+        otherMoves = board.removePinnedMoves(otherMoves, currentMoves)
+        otherMoves = board.removeKingMovesCheck(otherMoves, currentMoves)
+
     }
 
     private val a0 = Input("move")
@@ -160,7 +153,7 @@ class Game {
                 input[0] in 'a'..'h' && input[1] != 'x' && input != "draw" -> parsePawnMove(input, moves)
                 input.contains('x')                                        -> parseCapture(input, moves)
                 input[1] in 'a'..'h' && input[2] !in 'a'..'h'              -> parsePieceMove(input, moves)
-                input[1] in "12345678"                                     -> parsePieceMoveSameColumn(input, moves) // capture?
+                input[1] in "12345678"                                     -> parsePieceMoveSameColumn(input, moves)
                 input.length == 4 && input != "draw"                       -> parse4Move(input, moves)
                 input == "O-O"                                             -> parseCastlingShort(moves)
                 input == "O-O-O"                                           -> parseCastlingLong(moves)
@@ -237,9 +230,24 @@ class Game {
     private fun parseCapture(input: String, moves: MutableSet<ArrayList<Square>>): Move {
         return when {
             input[1] == 'x' -> capture1(input, moves)
-            input[2] == 'x' && input[1] !in (1..8).toString()      -> capture2(input, moves)
-            input[2] == 'x' && input[1] in (1..8).toString()       -> captureSameColumn(input, moves)
+            input[2] == 'x' && input[1] in "abcdefgh"       -> captureSameRank(input, moves)
+            input[2] == 'x' && input[1] !in "12345678"      -> capture2(input, moves)
+            input[2] == 'x' && input[1] in "12345678"       -> captureSameColumn(input, moves)
             else -> capture3(input, moves)
+        }
+    }
+
+    private fun captureSameRank(input: String, moves: MutableSet<java.util.ArrayList<Square>>): Move {
+        return try{
+            var moveFrom = defaultSquare
+            val y = input[3].toInt()-97
+            val x = input[4].toInt()-49
+            moves.forEach {
+                if (it.contains(this.board.squares[x][y]) && it[0].getType() == input[0] && it[0].column == input[1].toInt()-97) moveFrom = it[0]
+            }
+            Move(moveFrom, this.board.squares[x][y], "x")
+        } catch (e: StringIndexOutOfBoundsException) {
+            defaultMove
         }
     }
 

@@ -86,7 +86,7 @@ fun main(args: Array<String>) {
                     else testgame.updateMoves('w')
 
                     if (checkIfCheck(testgame.otherMoves, currentState.value[0].toString())) {
-                        testgame.currentMoves = testgame.board.possibleMovesCheck(testgame.currentMoves, testgame.board.removeEmptyMoves(testgame.otherMoves))
+                        if (testgame.currentMoves.isNotEmpty()) testgame.currentMoves = testgame.board.possibleMovesCheck(testgame.currentMoves, testgame.board.removeEmptyMoves(testgame.otherMoves))
                     }
 
                     when {

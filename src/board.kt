@@ -61,7 +61,7 @@ class Board {
                         result.add(it)
                 }
             }
-            if (threateningPieceOnSameColumnRankDiagonal(it, checkingPiece) && it.getType() != 'K') result.add(it)
+            if (threateningPieceOnSameColumnRankDiagonal(it, checkingPiece, kingMoves[0]) && it.getType() != 'K') result.add(it)
         }
 
         moves.remove(kingMoves)
@@ -86,7 +86,7 @@ class Board {
                 }
                 else{
                     if(it != square && ((it.column-square.column).absoluteValue == (it.rank-square.rank).absoluteValue) &&
-                        (kingSquare.rank == square.rank || kingSquare.column == square.column)) return true
+                        ((kingSquare.column-square.column).absoluteValue == (kingSquare.rank-square.rank).absoluteValue)) return true
                 }
             }
         }
