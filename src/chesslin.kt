@@ -96,7 +96,7 @@ fun main(args: Array<String>) {
                                 else                                                                  -> inputs.add(Input("draw"))
                             }
                         }
-                        checkRepetition(history, 5) || checkFiftyMoves(history, 75) -> inputs.add(Input("draw")) // remove last turn from history tbh
+                        checkRepetition(history, 5) || checkFiftyMoves(history, 75) || deadPosition(testgame.currentPieces) -> inputs.add(Input("draw")) // remove last turn from history tbh
                         checkIfCheck(testgame.otherMoves, currentState.value[0].toString()) -> inputs.add(Input("check"))
                         else -> inputs.add(Input("move"))
                     }
@@ -120,6 +120,33 @@ fun main(args: Array<String>) {
         }
     }
 
+}
+
+fun deadPosition(currentPieces: MutableSet<Square>): Boolean {
+
+    var bishopsOfDifferentColor = ""
+    var blackSquareBishops = 0
+    var whiteSquareBishops = 0
+    if(currentPieces.size == 3){
+            currentPieces.forEach {
+                if (it.getType() == 'B' || it.getType() == 'N') return true
+            }
+        }
+    else if(currentPieces.size == 4 ){
+        currentPieces.forEach {
+            if(it.getType() == 'B') bishopsOfDifferentColor += it.getType()
+        }
+        if ('w' in bishopsOfDifferentColor && 'b' in bishopsOfDifferentColor){
+            currentPieces.forEach {
+                if (it.getType() == 'B'){
+                    if ((it.rank % 2 == 0 && it.column % 2 == 0) || (it.rank % 2 == 1 && it.column % 2 == 1)) blackSquareBishops++
+                    else whiteSquareBishops++
+                }
+            }
+            if (blackSquareBishops == 2 || whiteSquareBishops == 2 ) return true
+        }
+    }
+    return false
 }
 
 fun removeEmptyString(list: List<String>): MutableList<String> {
