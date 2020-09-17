@@ -21,34 +21,47 @@ class Board {
     fun removeKingMovesCheck(moves: MutableSet<ArrayList<Square>>, otherMoves: MutableSet<ArrayList<Square>> ): MutableSet<ArrayList<Square>> {
 
         val result = arrayListOf<Square>()
-        val threatenedSquares = mutableSetOf<Square>()
+        val threatenedDefendedSquares = mutableSetOf<Square>()
         val checkingPiece = mutableSetOf<Square>()
 
         otherMoves.forEach {
             it.forEach { square->
                 if (square != it[0] && square.hasPiece()){
-                    if (square.getType()=='K' && square.getColor() !=it[0].getColor()) checkingPiece.add(it[0])
+                    if (square.getType()=='K' && square.getColor() != it[0].getColor()) checkingPiece.add(it[0])
                 }
                 else {
-                    if(square != it[0] && it[0].getType() != 'P'){
-                        if(it[0].getType() != 'K') threatenedSquares.add(square)
+                    threatenedDefendedSquares.addAll(threatenedSquares(it[0]))
+                    /*if(square != it[0] && it[0].getType() != 'P'){
+                        if(it[0].getType() != 'K') threatenedDefendedSquares.add(square)
 
-                    }
+                    }*/
                 }
             }
             if(it[0].getType()=='K'){
-                threatenedSquares.addAll(threatenedSquares(it[0]))
+                threatenedDefendedSquares.addAll(threatenedSquares(it[0]))
             }
         }
-
 
         var kingMoves = arrayListOf<Square>()
         moves.forEach {
             if (it[0].getType() == 'K') kingMoves = it
         }
+        val kingSquare = findKing(moves.first()[0].getColor())
+        val squareCloseToList = listOf<ArrayList<Int>>(arrayListOf(1,0),arrayListOf(1,1),arrayListOf(0,1),arrayListOf(-1,0),arrayListOf(-1,-1),arrayListOf(0,-1),arrayListOf(1,-1),arrayListOf(-1,1))
+        squareCloseToList.forEach {
+
+            if(kingSquare.rank+it[0] in 0..7 && kingSquare.column+it[1] in 0..7){
+                if(this.squares[kingSquare.rank+it[0]][kingSquare.column+it[1]].hasPiece() && this.squares[kingSquare.rank+it[0]][kingSquare.column+it[1]].getColor() != kingSquare.getColor()){
+                    if(this.squares[kingSquare.rank+it[0]][kingSquare.column+it[1]].rank in 0..7 && this.squares[kingSquare.rank+it[0]][kingSquare.column+it[1]].column in 0..7){
+                        threatenedDefendedSquares.addAll(threatenedSquares(this.squares[kingSquare.rank+it[0]][kingSquare.column+it[1]]))
+                    }
+                }
+            }
+        }
+
         kingMoves.forEach {
-            if (it in threatenedSquares && it.getType() != 'K') result.add(it)
-            if (kingMoves[0].getColor() == "w") {
+            if (it in threatenedDefendedSquares && it.getType() != 'K') result.add(it)
+            else if (kingMoves[0].getColor() == "w") {
                 if (it.rank < 6) {
                     if ((it.column < 7 && this.squares[it.rank + 1][it.column + 1].getType() == 'P' && this.squares[it.rank + 1][it.column + 1].getColor() == "b" && it != kingMoves[0]) ||
                         (it.column > 0 && this.squares[it.rank + 1][it.column - 1].getType() == 'P' && this.squares[it.rank + 1][it.column - 1].getColor() == "b" && it != kingMoves[0]))
@@ -62,6 +75,7 @@ class Board {
                 }
             }
             if (threateningPieceOnSameColumnRankDiagonal(it, checkingPiece, kingMoves[0]) && it.getType() != 'K') result.add(it)
+
         }
 
         moves.remove(kingMoves)
@@ -98,6 +112,7 @@ class Board {
         val result = mutableSetOf<ArrayList<Square>>()
         moves.forEach {
             if (it.size > 1 && it[0].hasPiece()) result.add(it)
+            if (it.size == 2 && it[0]==it[1]) result.remove(it)
         }
         moves.clear()
         moves.addAll(result)
