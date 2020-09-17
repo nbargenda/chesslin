@@ -185,6 +185,7 @@ class Board {
 
     private fun isPinned(square: Square, otherMoves: MutableSet<ArrayList<Square>>): Square {
         val kingSquare = findKing(square.getColor())
+        val squareColor = square.getColor()
         val threateningSquares: MutableSet<Square> = mutableSetOf()
         if (square.getType() == 'K') return defaultSquare
         if (square.rank != kingSquare.rank && square.column != kingSquare.column &&
@@ -213,7 +214,7 @@ class Board {
                             for (i in 1..(maxOf(x, y)..7).count()) {
                                 try {
                                     if (this.squares[x - i][y + i].hasPiece()) {
-                                        if (this.squares[x - i][y + i].getType() == 'K') return it
+                                        if (this.squares[x - i][y + i].getType() == 'K' && this.squares[x - i][y + i].getColor() == squareColor) return it
                                         return defaultSquare
                                     }
                                 } catch (e: IndexOutOfBoundsException) { }
@@ -225,7 +226,7 @@ class Board {
                             for (i in 1..(maxOf(x, y)..7).count()) {
                                 try {
                                     if (this.squares[x - i][y - i].hasPiece()) {
-                                        if (this.squares[x - i][y - i].getType() == 'K') return it
+                                        if (this.squares[x - i][y - i].getType() == 'K' && this.squares[x - i][y - i].getColor() == squareColor) return it
                                         return defaultSquare
                                     }
                                 } catch (e: IndexOutOfBoundsException) {}
@@ -234,7 +235,7 @@ class Board {
                         else -> {
                             for (i in square.rank - 1 downTo 0) {
                                 if (this.squares[i][it.column].hasPiece()) {
-                                    if (this.squares[i][it.column].getType() == 'K') return it
+                                    if (this.squares[i][it.column].getType() == 'K' && this.squares[i][it.column].getColor() == squareColor) return it
                                     return defaultSquare
                                 }
                             }
@@ -249,7 +250,7 @@ class Board {
                             for (i in 1..(maxOf(x, y)..7).count()) {
                                 try {
                                     if (this.squares[x + i][y + i].hasPiece()) {
-                                        if (this.squares[x + i][y + i].getType() == 'K') return it
+                                        if (this.squares[x + i][y + i].getType() == 'K' && this.squares[x + i][y + i].getColor() == squareColor) return it
                                         return defaultSquare
                                     }
                                 } catch (e: IndexOutOfBoundsException) { }
@@ -261,7 +262,7 @@ class Board {
                             for (i in 1..(maxOf(x, y)..7).count()) {
                                 try {
                                     if (this.squares[x + i][y - i].hasPiece()) {
-                                        if (this.squares[x + i][y - i].getType() == 'K') return it
+                                        if (this.squares[x + i][y - i].getType() == 'K' && this.squares[x + i][y - i].getColor() == squareColor) return it
                                         return defaultSquare
                                     }
                                 } catch (e: IndexOutOfBoundsException) { }
@@ -270,7 +271,7 @@ class Board {
                         else -> {
                             for (i in square.rank + 1..7) {
                                 if (this.squares[i][it.column].hasPiece()) {
-                                    if (this.squares[i][it.column].getType() == 'K') return it
+                                    if (this.squares[i][it.column].getType() == 'K' && this.squares[i][it.column].getColor() == squareColor) return it
                                     return defaultSquare
                                 }
                             }
@@ -282,14 +283,14 @@ class Board {
                     if (it.column < square.column) {
                         for (i in square.column + 1..7) {
                             if (this.squares[it.rank][i].hasPiece()) {
-                                if (this.squares[it.rank][i].getType() == 'K') return it
+                                if (this.squares[it.rank][i].getType() == 'K' && this.squares[it.rank][i].getColor() == squareColor) return it
                                 return defaultSquare
                             }
                         }
                     } else {
                         for (i in square.column - 1 downTo 0) {
                             if (this.squares[it.rank][i].hasPiece()) {
-                                if (this.squares[it.rank][i].getType() == 'K') return it
+                                if (this.squares[it.rank][i].getType() == 'K' && this.squares[it.rank][i].getColor() == squareColor) return it
                                 return defaultSquare
                             }
                         }
