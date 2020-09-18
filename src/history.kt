@@ -38,7 +38,7 @@ class History(val turnHistory: ArrayList<Turn>) {
     override fun toString(): String {
         var i = 0
         var result = ""
-        this.turnHistory.forEach {
+        this.turnHistory.forEach{
             if (it.turn % 2 != 0) {
                 i++
                 result += "$i. "
