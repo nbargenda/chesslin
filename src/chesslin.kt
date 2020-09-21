@@ -11,6 +11,9 @@ fun main(args: Array<String>) {
     val inputs = mutableListOf<Input>()
     var input: String?
     var gameInputs: List<String> = listOf()
+    val whiteEval = eval('w')
+    val blackEval = eval('b')
+
     if (args[0] == "-t"){
         gameInputs = parsePGN(File("${args[1]}.txt").readText())
         gameInputs = removeEmptyString(gameInputs)
@@ -81,6 +84,8 @@ fun main(args: Array<String>) {
                     } else {
                         testgame.executeMove(move)
                     }
+                    println("White Eval: ${whiteEval.evaluateBoard(testgame.board)}")
+                    println("Black Eval: ${blackEval.evaluateBoard(testgame.board)}")
 
                     if(currentState.value[0]=='w') testgame.updateMoves('b')
                     else testgame.updateMoves('w')
