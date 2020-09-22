@@ -11,8 +11,8 @@ fun main(args: Array<String>) {
     val inputs = mutableListOf<Input>()
     var input: String?
     var gameInputs: List<String> = listOf()
-    val whiteEval = eval('w')
-    val blackEval = eval('b')
+    val whiteEval = Eval('w')
+    val blackEval = Eval('b')
 
     if (args[0] == "-t"){
         gameInputs = parsePGN(File("${args[1]}.txt").readText())
